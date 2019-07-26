@@ -33,5 +33,5 @@ if __name__ == '__main__':
 	newPlayer.giveExp(1000)
 	print( "New Level: " + str( newPlayer.level ) )
 	print( "Current Experience: " + str( newPlayer.experience ) ) # Level wasn't specified, so current xp is 0
-	print( "EXP to next Level: " + str( newPlayer.nextLvlExperience ) ) # 500 Experience is required to get to level 2
+	print( "EXP to next Level: " + str( newPlayer.nextLvlExperience ) ) # 1000 Experience is required to get to level 2
   ```
