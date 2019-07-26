@@ -1,5 +1,8 @@
 from uuid import uuid4
 import math
+from random import SystemRandom
+import operator as op
+from functools import reduce
 
 class Player(object):
 
@@ -37,7 +40,7 @@ class Player(object):
 		if (self.level == None):
 			self.level      = 1
 			self.experience = 0
-			self.getExpForNextLevel
+			self.getExpForNextLevel()
 		else:
 			self.getCurrentExperience()
 			self.getExpForNextLevel()
@@ -59,23 +62,33 @@ class Player(object):
 
 	# Levels and Experience
 	def giveExp(self, xp):
-		self.currentExperience += xp
-		if (self.LeveledUp()):
+		self.experience += xp
+		while (self.LeveledUp()):
+			print('level up')
 			self.levelUp()
+			self.getExpForNextLevel()
+		else:
+			self.getExpForNextLevel()
 
 	def LeveledUp(self):
-		if self.currentExperience > self.nextLvlExperience:
+		if self.experience >= self.nextLvlExperience:
 			return True
 		else:
 			return False
 
 	def getCurrentExperience(self):
-		x = self.level*(self.level-1)*500
-		self.currentExperience = x
+		try:
+			self.experience = self.experience
+		except:
+			self.experience = int(1000 * (self.level + Player.nCr(self.level,2))) - (self.level*1000)
 
 	def getExpForNextLevel(self):
-		x = self.level*(self.level)*500
-		self.nextLvlExperience = x - self.experience
+		if self.level == 1:
+			self.lastLevelExperience = 0
+			self.nextLvlExperience = 1000 - self.experience
+		elif self.level > 1:
+			self.lastLevelExperience = (1000 * (self.level + Player.nCr(self.level,2))) - (self.level*1000)
+			self.nextLvlExperience = int((self.lastLevelExperience + ((1000 * ((self.level+1) + self.nCr((self.level+1),2))) - ((self.level+1)*1000))) - self.experience)
 
 	def levelUp(self):
 		self.getExpForNextLevel()
@@ -106,4 +119,23 @@ class Player(object):
 	def getModifier(a):
 		modifier = math.floor(a/2)-5
 		return modifier
+
+	# Class Methods
+	@classmethod
+	def nCr(self,n,r):
+		r = min(r, n-r)
+		numer = reduce(op.mul, range(n, n-r, -1),1)
+		denom = reduce(op.mul, range(1, r+1), 1)
+		return numer / denom
+
+class Roll(object):
+	
+	def __init__(self, min: int, max: int):
+		self.min = min
+		self.max = max
+		self.dice()
+
+	def dice(self):
+		c = SystemRandom()
+		self.value = c.randrange(self.min,self.max)		
 
