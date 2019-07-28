@@ -1,9 +1,39 @@
+#! /usr/bin/python
+# -*- coding: utf-8 -*-
+
+"""
+PyDnD is a python package for integrating DnD rulesets into external
+applications.
+
+{License_info}
+"""
+
+# Built-in/Generic Imports
+import math
+import operator as op
+from functools import reduce
+from random import SystemRandom
+from uuid import uuid4
+
+__author__ = 'Markis Cook'
+__copyright__ = 'Copyright 2019, PyDnD'
+__credits__ = ['Markis Cook (Lead Programmer, Creator)']
+__license__ = '{license}'
+__version__ = '0.1.0'
+__maintainer__ = 'Markis Cook'
+__email__ = 'cookm0803@gmail.com'
+__status__ = 'Open'
+
 from uuid import uuid4
 import math
 from random import SystemRandom
 import operator as op
 from functools import reduce
 
+
+#################
+# PLAYER OBJECT #
+#################
 class Player(object):
 	"""Player Object deals with all aspects of the player character
 	
@@ -43,6 +73,7 @@ class Player(object):
 		name:               str = None,
 		age:                str = None, 
 		gender:             str = None, 
+		alignment:          str = None,
 		description:        str = None,
 		biography:          str = None,
 		level:              int = None,
@@ -71,6 +102,13 @@ class Player(object):
 		self.gender         = gender
 		self.description    = description
 		self.biography      = biography
+
+		# Handle Alignment
+		self.alignment      = alignment
+		if self.alignment != None:
+			assert (len(self.alignment) == 2), "Alignments must be 2 letters (i.e LE, LG, TN, NG, CN)"
+			self.alignment = self.alignment.upper()
+
 		self.wealth         = wealth
 
 		# If wealth is omitted, set starting wealth to 0
@@ -94,11 +132,35 @@ class Player(object):
 
 		# Ability Scores
 		self.strength       = strength
+		# If strength not set, default to 10
+		if self.strength == None:
+			self.strength = 10
+
 		self.dexterity      = dexterity
-		self.consitution    = constitution
+		# If Dexterity not set, default to 10
+		if self.dexterity == None:
+			self.dexterity = 10
+
+		self.constitution    = constitution
+		# If Constitution not set, default to 10
+		if self.constitution == None:
+			self.constitution = 10
+
 		self.wisdom         = wisdom
+		# If Wisdom not set, default to 10
+		if self.wisdom == None:
+			self.wisdom = 10
+
 		self.intelligence   = intelligence
+		# If intelligence not set, default to 10
+		if self.intelligence == None:
+			self.intelligence = 10
+
 		self.charisma       = charisma
+		# If Charisma not set, default to 10
+		if self.charisma == None:
+			self.charisma = 10
+
 		self.hp             = hp
 		self.mp             = mp
 
@@ -219,12 +281,6 @@ class Player(object):
 	def giveWealth(self, amount):
 		self.wealth = self.wealth + amount
 
-	# Utility Methods
-	@staticmethod
-	def getModifier(a):
-		modifier = math.floor(a/2)-5
-		return modifier
-
 	# Class Methods
 	@classmethod
 	def nCr(self,n,r):
@@ -232,6 +288,22 @@ class Player(object):
 		numer = reduce(op.mul, range(n, n-r, -1),1)
 		denom = reduce(op.mul, range(1, r+1), 1)
 		return numer / denom
+
+	@classmethod
+	def getModifier(self,stat):
+		"""Returns modifier for given stat
+
+		This method returns the modifier for the given stat provided
+
+		Args:
+			stat (int): The player ability score to calculate the modifier for
+
+		Returns:
+			modifier  (int): The modifier for the given stat
+			None (NoneType): Returns none if the ability score queried doesn't exist
+		"""
+		modifier = math.floor(stat/2)-5
+		return modifier	
 
 class Roll(object):
 	
@@ -242,5 +314,4 @@ class Roll(object):
 
 	def dice(self):
 		c = SystemRandom()
-		self.value = c.randrange(self.min,self.max)		
-
+		self.value = c.randrange(self.min,self.max)	
