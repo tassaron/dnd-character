@@ -134,35 +134,12 @@ class Player(object):
 
 
 		# Ability Scores
-		self.strength       = strength
-		# If strength not set, default to 10
-		if self.strength == None:
-			self.strength = 10
-
-		self.dexterity      = dexterity
-		# If Dexterity not set, default to 10
-		if self.dexterity == None:
-			self.dexterity = 10
-
-		self.constitution    = constitution
-		# If Constitution not set, default to 10
-		if self.constitution == None:
-			self.constitution = 10
-
-		self.wisdom         = wisdom
-		# If Wisdom not set, default to 10
-		if self.wisdom == None:
-			self.wisdom = 10
-
-		self.intelligence   = intelligence
-		# If intelligence not set, default to 10
-		if self.intelligence == None:
-			self.intelligence = 10
-
-		self.charisma       = charisma
-		# If Charisma not set, default to 10
-		if self.charisma == None:
-			self.charisma = 10
+		self.strength       = setInitialAbilityScore(strength)
+		self.dexterity      = setInitialAbilityScore(dexterity)
+		self.constitution   = setInitialAbilityScore(constitution)
+		self.wisdom         = setInitialAbilityScore(wisdom)
+		self.intelligence   = setInitialAbilityScore(intelligence)
+		self.charisma       = setInitialAbilityScore(charisma)
 
 		self.hp             = hp
 		self.mp             = mp
@@ -291,7 +268,15 @@ class Player(object):
 		numer = reduce(op.mul, range(n, n-r, -1),1)
 		denom = reduce(op.mul, range(1, r+1), 1)
 		return numer / denom
-
+	
+	@classmethod
+	def setInitialAbilityScore(self, stat):
+		if stat == None:
+			roll = Roll(1,20)
+			return roll
+		else:
+			return int(stat)
+	
 	@classmethod
 	def getModifier(self,stat):
 		"""Returns modifier for given stat
@@ -325,11 +310,22 @@ class Roll(object):
 		This object returns nothing and instead sets the value of self.value
 		to be called at a later time.
 	"""
-	def __init__(self, min: int, max: int):
+	def __init__(self, min: int, max: int, modifier: int = 0):
 		self.min = min
 		self.max = max
+		self.modifier = modifier
 		self.dice()
 
 	def dice(self):
 		c = SystemRandom()
 		self.value = c.randrange(self.min,self.max)	
+		return self.value + modifier
+	
+	def __del__(self):
+		del self.min
+		del self.max
+		del self.modifier
+		del self.value
+		
+		
+		
