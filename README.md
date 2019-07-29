@@ -5,8 +5,8 @@ Python Dungeons and Dragons Library
 ## Example Invocation
 
 ```python
-from core.player import Player
-from core.player import Roll
+from core import Player
+from core import Roll
 
 if __name__ == '__main__':
 		
