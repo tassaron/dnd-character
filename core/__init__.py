@@ -308,8 +308,23 @@ class Player(object):
 		modifier = math.floor(stat/2)-5
 		return modifier	
 
+###############
+# Roll Object #
+###############
 class Roll(object):
-	
+	"""Creates roll values
+
+	The Roll object creates roll values for dice rolls.  Random values are created from
+	SystemRandom (using system entropy) to create a better pseudorandom number.
+
+	Args:
+		min (int): the minimum number to roll
+		max (int): the maximum number to roll
+
+	Returns:
+		This object returns nothing and instead sets the value of self.value
+		to be called at a later time.
+	"""
 	def __init__(self, min: int, max: int):
 		self.min = min
 		self.max = max
