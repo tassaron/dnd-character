@@ -128,12 +128,12 @@ class Player(object):
 
 
 		# Ability Scores
-		self.strength       = setInitialAbilityScore(strength)
-		self.dexterity      = setInitialAbilityScore(dexterity)
-		self.constitution   = setInitialAbilityScore(constitution)
-		self.wisdom         = setInitialAbilityScore(wisdom)
-		self.intelligence   = setInitialAbilityScore(intelligence)
-		self.charisma       = setInitialAbilityScore(charisma)
+		self.strength       = self.setInitialAbilityScore(strength)
+		self.dexterity      = self.setInitialAbilityScore(dexterity)
+		self.constitution   = self.setInitialAbilityScore(constitution)
+		self.wisdom         = self.setInitialAbilityScore(wisdom)
+		self.intelligence   = self.setInitialAbilityScore(intelligence)
+		self.charisma       = self.setInitialAbilityScore(charisma)
 
 		self.hp             = hp
 		self.mp             = mp
