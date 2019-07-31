@@ -400,20 +400,50 @@ class Roll(object):
 	"""
 	def __init__(self, min: int, max: int, modifier: int = 0):
 		self.min = min
-		self.max = max
+		self.max = max+1
 		self.modifier = modifier
 		self.dice()
 
 	def dice(self):
 		c = SystemRandom()
-		self.value = c.randrange(self.min,self.max)	
-		return self.value + modifier
+		self.value = c.randrange(self.min,self.max)	+ self.modifier
+
+
+#############
+# STAT ROLL #		
+#############
+class RollStats(object):
 	
-	def __del__(self):
-		del self.min
-		del self.max
-		del self.modifier
-		del self.value
+	def __init__(self, method: str=None):
+		self.method = method
+
+
+	def stat_roller(self):
+		if self.method.lower() in [None, 'standard', '4d6d1', '4d6dl']:
+			#default method
+
+		elif self.method.lower() == "3d6" or "classic":
+			# Roll 4D6 drop lowerest method
+			statNumber = 0
+			for i in range(3):
+				dice = Roll(1,6)
+				statNumber += dice.value
+			self.statroll = int(statNumber)
+
+		elif self.method.lower() == "heroic" or "2d6+6":
+			# Roll 2d6 and add 6 to that number
+			statNumber = 0
+			for i in range(2):
+				dice = Roll(1,6)
+				statNumber += dice.value
+			self.statroll = int(statNumber + 6)
+
+		elif self.method.lower() == "standard" or "4d6d1" or "4d6dl":
+			# Roll 4d6 and drop the lowest value
+
+
+		else:
+			raise "Accepted values are, 'standard','classic', and 'heroic' roll methods."
 		
 		
 		
