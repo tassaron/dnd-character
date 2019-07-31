@@ -160,11 +160,53 @@ class Player(object):
 			
 		Returns:
 			This method returns nothing and instead modifies self.experience
+			
+		Triggers:
+			self.LeveledUp(): Triggers every time, checks to see if player
+					  has gained the experience required to acheive
+					  the next level.
+					  
+			self.levelUp(): Triggers when self.LeveledUp() is True, increments
+					the player object's level by one and gets the
+					experience needed for the next level.
+					
+			self.getExpForNextLevel(): Triggers when self.LeveledUp() is False
+						   and gets the Experience needed for the 
+						   next level.
 		"""
 		self.experience += xp
 		while (self.LeveledUp()):
 			self.levelUp()
+		else:
 			self.getExpForNextLevel()
+			
+	def removeExp(self, xp):
+		"""Decrements experience of player object
+		
+		This method decrements the current self.experience of the
+		player object by the amount specified
+		
+		Args:
+			xp (int): The amount of experience to decrement self.experience by
+			
+		Returns:
+			This method returns nothing and instead modifies self.experience
+			
+		Triggers:
+			self.LeveledDown(): Triggered every time, checks to see if player
+					    lost the experience required to maintain their
+					    current level.
+					    
+			self.levelDown(): Triggers only if self.LeveledDown() is True
+					  decrements the level of the player object
+					  
+			self.getExpForNextLevel(): Triggers ever time, checks the experience
+			                           needed to reach the next level for the player
+						   object
+		"""
+		self.experience -= xp
+		while (self.LeveledDown()):
+			self.levelDown()
 		else:
 			self.getExpForNextLevel()
 
@@ -186,7 +228,25 @@ class Player(object):
 			return True
 		else:
 			return False
-
+		
+	def LeveledDown(self):
+		"""Checks to see if player has leveled down
+		
+		This method checks the current experience against the experience
+		needed to gain their previous level.  If their experience drops
+		below that level, the player loses a level.
+		
+		Args:
+			None
+		
+		Returns:
+			None
+		"""
+		if self.experience < self.lastLevelExperience:
+			return True
+		else:
+			return False
+		
 	def getCurrentExperience(self):
 		"""Calculates the current experience of player
 		
@@ -240,6 +300,29 @@ class Player(object):
 		"""
 		self.getExpForNextLevel()
 		self.level += 1
+		
+	def levelDown(self):
+		"""Handles player level down
+		
+		This method decrements the players level by one first and 
+		then triggers the getExpForNextLevel() method.
+		
+		Args:
+			None
+			
+		Returns:
+			None
+		"""
+		# Only Decrement level if level is higher than 1
+		if self.level > 1:
+			self.level -= 1
+		# If level is already at level 1, player cannot lose
+		# a level and instead is reduced to 0 experience.
+		else:
+			self.level = 1
+			self.experience = 0
+		# Regardless, get Experience for next Level
+		self.getExpForNextLevel()
 
 	# Inventory and Inventory management (Primitive)
 	def getInventorySize(self):
