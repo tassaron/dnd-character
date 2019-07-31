@@ -1,1 +1,3 @@
-include PyDnD/resources/classes.json
+include ./PyDnD/resources/classes.json
+include ./PyDnD/resources/feats.json
+include ./PyDnD/resources/skills.json
