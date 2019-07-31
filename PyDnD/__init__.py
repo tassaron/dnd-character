@@ -42,6 +42,7 @@ class Player(object):
 		name         (str): Player character's name
 		age          (str): Player character's age
 		gender       (str): Player character's gender
+		alignment    (str): Player character's two letter alignment
 		description  (str): Physical description of Player character
 		biography    (str): Backstory of Player character
 		
