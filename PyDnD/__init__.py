@@ -241,7 +241,7 @@ class Player(object):
 			None
 		
 		Returns:
-			None
+			Boolval
 		"""
 		if self.experience < self.lastLevelExperience:
 			return True
