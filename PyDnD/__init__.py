@@ -24,13 +24,6 @@ __maintainer__ = 'Markis Cook'
 __email__ = 'cookm0803@gmail.com'
 __status__ = 'Open'
 
-from uuid import uuid4
-import math
-from random import SystemRandom
-import operator as op
-from functools import reduce
-
-
 #################
 # PLAYER OBJECT #
 #################
@@ -147,8 +140,15 @@ class Player(object):
 		# Inventory (currently primitive)
 		self.inventory      = []
 		self.invsize        = len(self.inventory)
-
-	# Levels and Experience
+	
+	################################
+	# START: Levels and Experience #
+	##############################################################################
+	#                                                                            #
+	# All Methods under this section deal with Incrementing/Decrementing levels  #
+	# and managing experience.                                                   #
+	#                                                                            #
+	##############################################################################
 	def giveExp(self, xp):
 		"""Increment experience of player object
 		
@@ -323,6 +323,10 @@ class Player(object):
 			self.experience = 0
 		# Regardless, get Experience for next Level
 		self.getExpForNextLevel()
+	##############################
+	# END: Levels and Experience #
+	##############################
+		
 
 	# Inventory and Inventory management (Primitive)
 	def getInventorySize(self):
