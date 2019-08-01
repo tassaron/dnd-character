@@ -1,8 +1,10 @@
-import core
+from PyDnD import Player
+from PyDnD import Roll
+
 
 if __name__ == '__main__':
 		
-	newPlayer = core.Player(name='Thor Odinson', age='34', gender='Male', description='Looks like a pirate angel', biography='Born on Asgard, God of Thunder')
+	newPlayer = Player(name='Thor Odinson', age='34', gender='Male', description='Looks like a pirate angel', biography='Born on Asgard, God of Thunder')
 		
 	# newPlayer is created, lets display some stats
 	print( "Name:" + newPlayer.name )

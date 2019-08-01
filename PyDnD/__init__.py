@@ -421,6 +421,7 @@ class RollStats(object):
 	def stat_roller(self):
 		if self.method.lower() in [None, 'standard', '4d6d1', '4d6dl']:
 			#default method
+			pass
 
 		elif self.method.lower() == "3d6" or "classic":
 			# Roll 4D6 drop lowerest method
@@ -440,6 +441,7 @@ class RollStats(object):
 
 		elif self.method.lower() == "standard" or "4d6d1" or "4d6dl":
 			# Roll 4d6 and drop the lowest value
+			pass
 
 
 		else:
