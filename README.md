@@ -1,5 +1,5 @@
 # PyDnD
-Python Dungeons and Dragons Library
+Python Dungeons and Dragons Library utilizing SRD
 
 
 ## Example Invocation
