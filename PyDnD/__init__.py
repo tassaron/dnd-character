@@ -349,18 +349,62 @@ class Player(object):
 	#############################
 	# Give wealth to player object
 	def giveWealth(self, amount):
+		"""Handles awarding players wealth
+		
+		The giveWealth() method increments the wealth of the player
+		object
+		
+		Args:
+			amount
+		
+		Returns:
+			None
+		"""
 		self.wealth += amount
 	
 	# Remove wealth from player object
 	def removeWealth(self, amount):
+		"""Handles removing wealth from the player
+		
+		The removeWealth() method decrements the wealth of the player
+		object by the amount supplied.  If the wealth of the player
+		object is not sufficient, the self.wealth of the player is
+		instead set to 0.
+		
+		Args:
+			amount
+			
+		Returns:
+			None
+		"""
 		if amount > self.wealth:
 			self.wealth = 0
 		else:
 			self.wealth -= amount
 			
 	# Charge wealth from player object
-	# reject if not enough present
 	def chargeWealth(self, amount):
+		"""Handles charging wealth from the player
+		
+		The chargeWealth() method functions similarly to the
+		removeWealth() method.  However, instead of setting
+		self.wealth to 0 on the condition of not having enough,
+		chargeWealth() returns False and doesn't change the
+		value of self.wealth.  On success, self.removeWealth()
+		is triggered, the amount is removed, and chargeWealth()
+		returns True.
+		
+		Args:
+			amount
+			
+		Returns:
+			Boolval
+			
+		Triggers:
+			self.removeWealth(): Triggers if self.wealth of
+			                     player object contains enough
+					     wealth to remove amount from.
+		"""
 		if amount > self.wealth:
 			# Not enough for purchase
 			return False
@@ -378,8 +422,21 @@ class Player(object):
 	
 	@classmethod
 	def setInitialAbilityScore(self, stat):
+		"""Handles setting initial Ability Scores
+		
+		The setInitialAbilityScore() method accepts a Stat arg.  If Stat is
+		None, then this method instead Rolls for the initial starting ability
+		score using the standard rolling method.
+		
+		Args:
+			stat
+			
+		Returns:
+			roll: the RollStats() object.  Get value with roll.value
+			int(stat): The integer value of the supplied stat
+		"""
 		if stat == None:
-			roll = Roll(1,20)
+			roll = RollStats()
 			return roll
 		else:
 			return int(stat)
