@@ -10,7 +10,8 @@ from PyDnD import Roll
 
 if __name__ == '__main__':
 		
-	newPlayer = Player(name='Thor Odinson', age='34', 
+	newPlayer = Player(name='Thor Odinson', 
+			   age='34', 
 			   gender='Male', 
 			   description='Looks like a pirate angel', 
 			   biography='Born on Asgard, God of Thunder')
