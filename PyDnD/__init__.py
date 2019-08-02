@@ -328,7 +328,6 @@ class Player(object):
 	# END: Levels and Experience #
 	##############################
 		
-
 	# Inventory and Inventory management (Primitive)
 	def getInventorySize(self):
 		self.invsize = len(self.inventory)
@@ -344,10 +343,30 @@ class Player(object):
 	def removeItem(self, item):
 		self.inventory.remove(item)
 		self.updateInventory()
-
-	# Wealth, Income, and Trade
+	
+	#############################
+	# Wealth, Income, and Trade #
+	#############################
+	# Give wealth to player object
 	def giveWealth(self, amount):
-		self.wealth = self.wealth + amount
+		self.wealth += amount
+	
+	# Remove wealth from player object
+	def removeWealth(self, amount):
+		if amount > self.wealth:
+			self.wealth = 0
+		else:
+			self.wealth -= amount
+			
+	# Charge wealth from player object
+	# reject if not enough present
+	def chargeWealth(self, amount):
+		if amount > self.wealth:
+			# Not enough for purchase
+			return False
+		else:
+			self.removeWealth(self, amount)
+			return True
 
 	# Class Methods
 	@classmethod
@@ -417,32 +436,38 @@ class RollStats(object):
 	def __init__(self, method: str=None):
 		self.method = method
 
-
 	def stat_roller(self):
 		if self.method.lower() in [None, 'standard', '4d6d1', '4d6dl']:
 			#default method
-			pass
+			statNumber = 0
+			self.rollList = []
+			for i in range(4):
+				dice = Roll(1,6)
+				statNumber += dice.value
+				self.rollList.append(dice.value)
+			statNumber -= min(self.rollList)
+			self.rollList.remove(min(self.rollList))
+			self.statroll = int(statNumber)
 
 		elif self.method.lower() == "3d6" or "classic":
 			# Roll 4D6 drop lowerest method
 			statNumber = 0
+			self.rollList = []
 			for i in range(3):
 				dice = Roll(1,6)
 				statNumber += dice.value
+				self.rollList.append(dice.value)
 			self.statroll = int(statNumber)
 
 		elif self.method.lower() == "heroic" or "2d6+6":
 			# Roll 2d6 and add 6 to that number
 			statNumber = 0
+			self.rollList = []
 			for i in range(2):
 				dice = Roll(1,6)
 				statNumber += dice.value
+				self.rollList.append(dice.value)
 			self.statroll = int(statNumber + 6)
-
-		elif self.method.lower() == "standard" or "4d6d1" or "4d6dl":
-			# Roll 4d6 and drop the lowest value
-			pass
-
 
 		else:
 			raise "Accepted values are, 'standard','classic', and 'heroic' roll methods."
