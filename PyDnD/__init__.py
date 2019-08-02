@@ -24,9 +24,9 @@ __maintainer__ = 'Markis Cook'
 __email__ = 'cookm0803@gmail.com'
 __status__ = 'Open'
 
-#################
-# PLAYER OBJECT #
-#################
+########################
+# START: PLAYER OBJECT #
+########################
 class Player(object):
 	"""Player Object deals with all aspects of the player character
 	
@@ -62,6 +62,15 @@ class Player(object):
 		This object returns nothing.  Instead all Args populate self.argname
 	"""
 
+	#######################################
+	# START: Player Object Initialization #
+	#############################################################################
+	#                                                                           #
+	#  All self.argname and methods under this section are solely dealing with  #
+	#  setting up the Player object and gathering the required information to   #
+	#  set all self variables.                                                  #
+	#                                                                           #
+	#############################################################################
 	def __init__(
 		self,
 		name:               str = None,
@@ -141,6 +150,9 @@ class Player(object):
 		# Inventory (currently primitive)
 		self.inventory      = []
 		self.invsize        = len(self.inventory)
+		#####################################
+		# END: Player Object Initialization #
+		#####################################
 	
 	################################
 	# START: Levels and Experience #
@@ -324,9 +336,9 @@ class Player(object):
 			self.experience = 0
 		# Regardless, get Experience for next Level
 		self.getExpForNextLevel()
-	##############################
-	# END: Levels and Experience #
-	##############################
+		##############################
+		# END: Levels and Experience #
+		##############################
 		
 	# Inventory and Inventory management (Primitive)
 	def getInventorySize(self):
@@ -344,9 +356,14 @@ class Player(object):
 		self.inventory.remove(item)
 		self.updateInventory()
 	
-	#############################
-	# Wealth, Income, and Trade #
-	#############################
+	####################################
+	# START: Wealth, Income, and Trade #
+	###############################################################################
+	#                                                                             #
+	# All methods below deal with the player objects Wealth, income, and trading  #
+	# of currencies (maybe item trading will go here as well?)                    #
+	#                                                                             #
+	###############################################################################
 	# Give wealth to player object
 	def giveWealth(self, amount):
 		"""Handles awarding players wealth
@@ -411,6 +428,9 @@ class Player(object):
 		else:
 			self.removeWealth(self, amount)
 			return True
+		####################################
+		#  END: Wealth, Income, and Trade  #
+		####################################
 
 	# Class Methods
 	@classmethod
@@ -456,10 +476,12 @@ class Player(object):
 		"""
 		modifier = math.floor(stat/2)-5
 		return modifier	
-
-###############
-# Roll Object #
-###############
+	#######################
+	# END: PLAYER OBJECT  #
+	#######################
+######################
+# START: ROLL OBJECT #
+######################
 class Roll(object):
 	"""Creates roll values
 
@@ -483,11 +505,12 @@ class Roll(object):
 	def dice(self):
 		c = SystemRandom()
 		self.value = c.randrange(self.min,self.max)	+ self.modifier
-
-
-#############
-# STAT ROLL #		
-#############
+	######################
+	#  END: ROLL OBJECT  #
+	######################
+###########################
+# START: ROLLSTATS OBJECT #		
+###########################
 class RollStats(object):
 	
 	def __init__(self, method: str=None):
@@ -528,6 +551,12 @@ class RollStats(object):
 
 		else:
 			raise "Accepted values are, 'standard','classic', and 'heroic' roll methods."
+	###########################
+	#  END: ROLLSTATS OBJECT  #
+	###########################
+#######
+# EOF #
+#######
 		
 		
 		
