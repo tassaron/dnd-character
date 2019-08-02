@@ -33,6 +33,8 @@ if __name__ == '__main__':
 	print( "Current Experience:", newPlayer.experience) # Current, experience after leveling up
 	print( "EXP to next Level:",  newPlayer.nextLvlExperience) # 3000 Experience is required to get to level 3
   ```
+***
+
 ## Player Object
 
   The Player Object is the core of this library and should not be omitted (unless you're just using PyDnD for the Dice roller).  All arguments for the player object technically can be omitted (and added later) to create a blank, level 1 character.  However, we recommend at least giving the player object a `name`.  When Initializing the object, it's important to key the arguments with their corresponding argument name (listed below).
@@ -74,6 +76,7 @@ myPlayer = Player(name        = 'John Cougar Mellencamp',
 # Did we put the wrong name?  That's okay!  We can change it
 myPlayer.name = 'Meatloaf'
 ```
+***
 
 ## Experience and Levels
 
