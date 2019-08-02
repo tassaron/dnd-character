@@ -10,7 +10,10 @@ from PyDnD import Roll
 
 if __name__ == '__main__':
 		
-	newPlayer = Player(name='Thor Odinson', age='34', gender='Male', description='Looks like a pirate angel', biography='Born on Asgard, God of Thunder')
+	newPlayer = Player(name='Thor Odinson', age='34', 
+			   gender='Male', 
+			   description='Looks like a pirate angel', 
+			   biography='Born on Asgard, God of Thunder')
 		
 	# newPlayer is created, lets display some stats
 	print( "Name:",          newPlayer.name)
@@ -37,7 +40,8 @@ Experience has multiple methods in this library.  However, only two of them shou
 ### Examples
 ```python
 # Set Player Object
-newPlayer = Player(name='Bob Ross', level=1)
+newPlayer = Player(name='Bob Ross',
+		   level=1)
 
 # Current Experience
 print("Current Experience:", newPlayer.experience)
