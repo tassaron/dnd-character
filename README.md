@@ -6,6 +6,8 @@ Python Dungeons and Dragons Library utilizing SRD
 **Status**:
 Incomplete/In-Development
 
+**Note**: If you like and/or want to use this, a star or a follow would be appreciated. 
+
 ## Example Invocation
 
 ```python
