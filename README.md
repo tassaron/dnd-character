@@ -1,6 +1,10 @@
 # PyDnD
+
+**Description**:
 Python Dungeons and Dragons Library utilizing SRD
 
+**Status**
+Incomplete/In-Development
 
 ## Example Invocation
 
