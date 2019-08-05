@@ -3,7 +3,7 @@
 **Description**:
 Python Dungeons and Dragons Library utilizing SRD
 
-**Status**
+**Status**:
 Incomplete/In-Development
 
 ## Example Invocation
