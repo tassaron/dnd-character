@@ -13,7 +13,7 @@ import math
 import operator as op
 from functools import reduce
 from random import SystemRandom
-from uuid import uuid4
+from uuid import uuid4, UUID
 
 __author__ = 'Markis Cook'
 __copyright__ = 'Copyright 2019, PyDnD'
@@ -73,6 +73,7 @@ class Player(object):
 	#############################################################################
 	def __init__(
 		self,
+		uid:               UUID = None,
 		name:               str = None,
 		age:                str = None, 
 		gender:             str = None, 
@@ -80,6 +81,7 @@ class Player(object):
 		description:        str = None,
 		biography:          str = None,
 		level:              int = None,
+		experience:         int = 0,
 		wealth:             int = None,
 		strength:           int = None,
 		dexterity:          int = None,
@@ -88,7 +90,13 @@ class Player(object):
 		intelligence:       int = None,
 		charisma:           int = None,
 		hp:                 int = None,
-		mp:                 int = None):                
+		mp:                 int = None,
+		skillpoints:        int = 0,
+		featpoints:         int = 0,
+		lastLevelExperience:int = None,
+		nextLvlExperience:  int = None,
+		inventory:          list= None,
+		invsize:            int = None):                
 		"""Object Initialization
 		
 		Object initialization, grabs all given Args and sets them to self.argname
@@ -99,7 +107,7 @@ class Player(object):
 			Nothing
 		"""
                           
-		self.uid            = uuid4()      # Unique identifier for given player
+		self.uid            = UUID(uid) if uid is not None else uuid4()   # Unique identifier for given player
 		self.name           = name
 		self.age            = age
 		self.gender         = gender
@@ -120,6 +128,7 @@ class Player(object):
 
 		# Levels
 		self.level          = level
+		self.experience     = experience
 		
 		# If level is omitted, set starting level to 1
 		if (self.level == None):
@@ -132,8 +141,14 @@ class Player(object):
 			self.getCurrentExperience()
 			self.getExpForNextLevel()
 
-		self.skillpoints = 0
-		self.featpoints = 0
+		# Sanity check
+		if lastLevelExperience is not None:
+			assert self.lastLevelExperience == lastLevelExperience 
+		if nextLvlExperience is not None:
+			assert self.nextLvlExperience == nextLvlExperience
+
+		self.skillpoints = skillpoints
+		self.featpoints = featpoints
 
 
 		# Ability Scores
@@ -148,11 +163,44 @@ class Player(object):
 		self.mp             = mp
 
 		# Inventory (currently primitive)
-		self.inventory      = []
+		self.inventory      = inventory if inventory is not None else []
 		self.invsize        = len(self.inventory)
 		#####################################
 		# END: Player Object Initialization #
 		#####################################
+
+	################################
+	# START: "Magic" Methods       #
+	##############################################################################
+	#                                                                            #
+	# Double-underscore methods that define how the object reacts to built-in    #
+	# functions such as str(), dict(), etc.
+	#                                                                            #
+	##############################################################################
+
+	def __str__(self):
+		return (
+			f"Name: {self.name}\n"
+			f"Age: {self.age}\n"
+			f"Gender: {self.gender}\n"
+			f"Description: {self.description}\n"
+			f"Biography:\n{self.biography}\n\n"
+			f"Level: {str(self.level)}\n"
+			f"Current Experience: {str(self.experience)}\n"
+			f"EXP to next Level: {str(self.nextLvlExperience)}\n"
+		)
+
+	def keys(self):
+		return [key for key in self.__dict__ if not key.startswith("__")]
+
+	def values(self):
+		return [
+			value if key != "uid" else str(value)
+			for key, value in self.__dict__.items() if not key.startswith("__")
+		]
+
+	def __getitem__(self, key):
+		return dict(zip(self.keys(), self.values()))[key]
 	
 	################################
 	# START: Levels and Experience #
@@ -457,7 +505,7 @@ class Player(object):
 		"""
 		if stat == None:
 			roll = RollStats()
-			return roll
+			return roll.stat_roller()
 		else:
 			return int(stat)
 	
@@ -514,10 +562,10 @@ class Roll(object):
 class RollStats(object):
 	
 	def __init__(self, method: str=None):
-		self.method = method
+		self.method = method if method is None else method.lower()
 
 	def stat_roller(self):
-		if self.method.lower() in [None, 'standard', '4d6d1', '4d6dl']:
+		if self.method in [None, 'standard', '4d6d1', '4d6dl']:
 			#default method
 			statNumber = 0
 			self.rollList = []
@@ -529,7 +577,7 @@ class RollStats(object):
 			self.rollList.remove(min(self.rollList))
 			self.statroll = int(statNumber)
 
-		elif self.method.lower() == "3d6" or "classic":
+		elif self.method == "3d6" or "classic":
 			# Roll 4D6 drop lowerest method
 			statNumber = 0
 			self.rollList = []
@@ -539,7 +587,7 @@ class RollStats(object):
 				self.rollList.append(dice.value)
 			self.statroll = int(statNumber)
 
-		elif self.method.lower() == "heroic" or "2d6+6":
+		elif self.method == "heroic" or "2d6+6":
 			# Roll 2d6 and add 6 to that number
 			statNumber = 0
 			self.rollList = []
@@ -551,12 +599,12 @@ class RollStats(object):
 
 		else:
 			raise "Accepted values are, 'standard','classic', and 'heroic' roll methods."
+
+		return self.statroll
+
 	###########################
 	#  END: ROLLSTATS OBJECT  #
 	###########################
 #######
 # EOF #
 #######
-		
-		
-		
