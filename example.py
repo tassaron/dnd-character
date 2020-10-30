@@ -1,27 +1,27 @@
-from PyDnD import Player
-from PyDnD import Roll
+from dnd_character import Character
+from dnd_character import Roll
 
 
 if __name__ == '__main__':
 		
-	newPlayer = Player(name='Thor Odinson', age='34', gender='Male', description='Looks like a pirate angel', biography='Born on Asgard, God of Thunder')
+	newCharacter = Character(name='Thor Odinson', age='34', gender='Male', description='Looks like a pirate angel', biography='Born on Asgard, God of Thunder')
 		
-	# newPlayer is created, lets display some stats
-	print( "Name:" + newPlayer.name )
-	print( "Age: " +newPlayer.age)
-	print( "Gender:" + newPlayer.gender )
-	print( "Description: " + newPlayer.description )
-	print( "Biography: " + newPlayer.biography )
+	# newCharacter is created, lets display some stats
+	print( "Name:" + newCharacter.name )
+	print( "Age: " +newCharacter.age)
+	print( "Gender:" + newCharacter.gender )
+	print( "Description: " + newCharacter.description )
+	print( "Biography: " + newCharacter.biography )
 	
 	print( "\n" )
 	
-	print( "Level: " + str( newPlayer.level ) ) # Level isn't specified in creation, so level is 1
-	print( "Current Experience: " + str( newPlayer.experience ) ) # Level wasn't specified, so current xp is 0
-	print( "EXP to next Level: " + str( newPlayer.nextLvlExperience ) ) # 1000 Experience is required to get to level 2
+	print( "Level: " + str( newCharacter.level ) ) # Level isn't specified in creation, so level is 1
+	print( "Current Experience: " + str( newCharacter.experience ) ) # Level wasn't specified, so current xp is 0
+	print( "EXP to next Level: " + str( newCharacter.nextLvlExperience ) ) # 1000 Experience is required to get to level 2
 	print("\n\n\n")
 	# Lets see what Thor looks like as a level 2
 
-	newPlayer.giveExp(1000)
-	print( "New Level: " + str( newPlayer.level ) ) # newPlayer.level is automatically increased when XP threshold increases
-	print( "Current Experience: " + str( newPlayer.experience ) ) # Current, experience after leveling up
-	print( "EXP to next Level: " + str( newPlayer.nextLvlExperience ) ) # 3000 Experience is required to get to level 3
+	newCharacter.giveExp(1000)
+	print( "New Level: " + str( newCharacter.level ) ) # newCharacter.level is automatically increased when XP threshold increases
+	print( "Current Experience: " + str( newCharacter.experience ) ) # Current, experience after leveling up
+	print( "EXP to next Level: " + str( newCharacter.nextLvlExperience ) ) # 3000 Experience is required to get to level 3

@@ -1,4 +1,4 @@
-include ./PyDnD/resources/classes.json
-include ./PyDnD/resources/feats.json
-include ./PyDnD/resources/skills.json
-include ./PyDnD/resources/spells.json
+include ./dnd_character/resources/classes.json
+include ./dnd_character/resources/feats.json
+include ./dnd_character/resources/skills.json
+include ./dnd_character/resources/spells.json

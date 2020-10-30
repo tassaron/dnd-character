@@ -1,6 +1,6 @@
 from setuptools import setup, find_packages
 from os import path
-from PyDnD.__init__ import __version__, __author__, __email__
+from dnd_character.__init__ import __version__, __author__, __credits__
 
 try:
     with open(
@@ -11,14 +11,14 @@ except Exception:
     long_description = "missing readme.md"
 
 setup(
-    name="PyDnD",
+    name="dnd_character",
     author=__author__,
-    author_email=__email__,
+    credits=__credits__,
     packages=find_packages(),
     version=__version__,
-    url="https://github.com/Coffee-fueled-deadlines/PyDnD",
+    url="https://github.com/tassaron2/dnd_character",
     license="EPL-2.0",
-    description="Python Dungeons and Dragons Library utilizing SRD",
+    description="make Dungeons & Dragons characters as serializable objects",
     long_description=long_description,
     long_description_content_type="text/markdown",
     keywords="dnd trpg tabletop rpg",
@@ -26,6 +26,7 @@ setup(
         "Development Status :: 3 - Alpha",
         "Intended Audience :: Developers",
         "Topic :: Games/Entertainment",
+        "Topic :: Games/Entertainment :: Role-Playing",
         "Programming Language :: Python :: 3.6",
         "License :: OSI Approved :: Eclipse Public License 2.0 (EPL-2.0)",
     ],

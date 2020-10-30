@@ -1,11 +1,11 @@
-from PyDnD import Player
+from dnd_character import Character
 
 def test_save_and_load_lvl1_player():
-    player = Player()
-    clone = Player(**dict(player))
+    player = Character()
+    clone = Character(**dict(player))
     assert dict(player) == dict(clone)
 
 def test_save_and_load_lvl3_player():
-    player = Player(level=3)
-    clone = Player(**dict(player))
+    player = Character(level=3)
+    clone = Character(**dict(player))
     assert dict(player) == dict(clone)

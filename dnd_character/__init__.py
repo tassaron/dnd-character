@@ -2,10 +2,8 @@
 # -*- coding: utf-8 -*-
 
 """
-PyDnD is a python package for integrating DnD rulesets into external
-applications.
-
-{License_info}
+dnd-character is a Python package for integrating DnD characters
+into external applications.
 """
 
 # Built-in/Generic Imports
@@ -15,22 +13,20 @@ from functools import reduce
 from random import SystemRandom
 from uuid import uuid4, UUID
 
-__author__ = 'Markis Cook'
-__copyright__ = 'Copyright 2019, PyDnD'
-__credits__ = ['Markis Cook (Lead Programmer, Creator)']
-__license__ = '{license}'
+__author__ = 'Brianna Rainey'
+__copyright__ = 'Copyright 2020'
+__credits__ = ['Brianna Rainey (Current Programmer)', 'Markis Cook (Original Creator)']
+__license__ = 'EPL-2.0'
 __version__ = '0.1.0'
-__maintainer__ = 'Markis Cook'
-__email__ = 'cookm0803@gmail.com'
-__status__ = 'Open'
+__maintainer__ = 'Briannna Rainey'
 
 ########################
 # START: PLAYER OBJECT #
 ########################
-class Player(object):
-	"""Player Object deals with all aspects of the player character
+class Character(object):
+	"""Character Object deals with all aspects of the player character
 	
-	Player Object deals with all aspects of the player character to include
+	Character Object deals with all aspects of the player character to include
 	name, age, gender, description, biography, level, wealth, and all
 	player Ability scores.  All can be omitted to create a blank, level 1 
 	player and all values can be manually adjusted via the calling 
@@ -39,35 +35,35 @@ class Player(object):
 	All given Args populate self.argname
 	
 	Args:
-		name         (str): Player character's name
-		age          (str): Player character's age
-		gender       (str): Player character's gender
-		alignment    (str): Player character's two letter alignment
-		description  (str): Physical description of Player character
-		biography    (str): Backstory of Player character
+		name         (str): Character character's name
+		age          (str): Character character's age
+		gender       (str): Character character's gender
+		alignment    (str): Character character's two letter alignment
+		description  (str): Physical description of Character character
+		biography    (str): Backstory of Character character
 		
-		level        (int): Player character's starting level
-		wealth       (int): Player character's starting wealth
+		level        (int): Character character's starting level
+		wealth       (int): Character character's starting wealth
 		
-		strength     (int): Player character's starting strength Ability Score
-		dexterity    (int): Player character's starting dexterity Ability Score
-		constitution (int): Player character's starting constitution Ability Score
-		wisdom       (int): Player character's starting wisdom Ability Score
-		intelligence (int): Player character's starting intelligence Ability Score
-		charisma     (int): Player character's starting charisma Ability Score
-		hp           (int): Player character's starting hitpoint value
-		mp           (int): Player character's starting mp value (may convert to SPD)
+		strength     (int): Character character's starting strength Ability Score
+		dexterity    (int): Character character's starting dexterity Ability Score
+		constitution (int): Character character's starting constitution Ability Score
+		wisdom       (int): Character character's starting wisdom Ability Score
+		intelligence (int): Character character's starting intelligence Ability Score
+		charisma     (int): Character character's starting charisma Ability Score
+		hp           (int): Character character's starting hitpoint value
+		mp           (int): Character character's starting mp value (may convert to SPD)
 		
 	Returns:
 		This object returns nothing.  Instead all Args populate self.argname
 	"""
 
 	#######################################
-	# START: Player Object Initialization #
+	# START: Character Object Initialization #
 	#############################################################################
 	#                                                                           #
 	#  All self.argname and methods under this section are solely dealing with  #
-	#  setting up the Player object and gathering the required information to   #
+	#  setting up the Character object and gathering the required information to   #
 	#  set all self variables.                                                  #
 	#                                                                           #
 	#############################################################################
@@ -166,7 +162,7 @@ class Player(object):
 		self.inventory      = inventory if inventory is not None else []
 		self.invsize        = len(self.inventory)
 		#####################################
-		# END: Player Object Initialization #
+		# END: Character Object Initialization #
 		#####################################
 
 	################################
@@ -326,7 +322,7 @@ class Player(object):
 		try:
 			self.experience = self.experience
 		except:
-			self.experience = int(1000 * (self.level + Player.nCr(self.level,2))) - (self.level*1000)
+			self.experience = int(1000 * (self.level + Character.nCr(self.level,2))) - (self.level*1000)
 
 	def getExpForNextLevel(self):
 		"""Calculates the experience needed for next level
@@ -344,7 +340,7 @@ class Player(object):
 			self.lastLevelExperience = 0
 			self.nextLvlExperience = 1000 - self.experience
 		elif self.level > 1:
-			self.lastLevelExperience = (1000 * (self.level + Player.nCr(self.level,2))) - (self.level*1000)
+			self.lastLevelExperience = (1000 * (self.level + Character.nCr(self.level,2))) - (self.level*1000)
 			self.nextLvlExperience = int((self.lastLevelExperience + ((1000 * ((self.level+1) + self.nCr((self.level+1),2))) - ((self.level+1)*1000))) - self.experience)
 
 	def levelUp(self):
