@@ -15,6 +15,7 @@ setup(
     author=__author__,
     credits=__credits__,
     packages=find_packages(),
+    include_package_data=True,
     version=__version__,
     url="https://github.com/tassaron2/dnd_character",
     license="EPL-2.0",

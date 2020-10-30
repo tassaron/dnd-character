@@ -4,7 +4,6 @@ import math
 import operator as op
 
 from .roll import RollStats
-from .classes import *
 
 
 class Character:

@@ -1,1 +1,2 @@
-include ./dnd_character/json.cache
+graft dnd_character/json_cache
+global-exclude *.pyc

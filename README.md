@@ -1,12 +1,17 @@
 # dnd-character
-A Python library to make 5e Dungeons & Dragons characters for use in another app. Characters are serializable into Python dicts so they can be saved and loaded however you wish. SRD rules are fetched from the [5e SRD API](https://github.com/bagelbits/5e-srd-api) the first time they're requested, then the JSON is cached locally for faster retrieval in the future.
+A Python library to make 5e Dungeons & Dragons characters for use in another app. Characters are serializable into Python dicts so they can be saved and loaded however you wish.
 
-Originally forked from [PyDnD](https://github.com/Coffee-fueled-deadlines/PyDnD).
+SRD rules are fetched from the [5e SRD API](https://github.com/bagelbits/5e-srd-api) the first time they're requested, then the JSON is cached locally for faster retrieval in the future. I've included the `json_cache` containing the SRD inside the repo in case this API changes, but when the API does change I will update this library. So please pin your version if you want to avoid any breaking changes.
 
 
 # Installation
 1. Install from PyPI using `pip install dnd-character`
 1. See `example.py` for example code on how to use the library.
+
+
+# Legalese
+* The software is EPL-2.0 and the text for this license is in `LICENSE` as is standard for software. Originally forked from [PyDnD](https://github.com/Coffee-fueled-deadlines/PyDnD).
+* The contents of `dnd_character/json_cache` are retrieved from [5e-srd-api](https://github.com/bagelbits/5e-srd-api/issues/114), and are covered by the Open Game License. See `dnd_character/json_cache/OGLv1.0a.txt` for details.
 
 
 ## Character Object

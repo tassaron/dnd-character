@@ -13,7 +13,7 @@ LOG.setLevel(0)
 
 
 try:
-    JSON_CACHE = f"{path.dirname(path.abspath(__file__))}/json.cache"
+    JSON_CACHE = f"{path.dirname(path.abspath(__file__))}/json_cache"
 except Exception as e:
     LOG.error(f"Entire JSON cache failed to load: {str(e)}")
 
@@ -26,8 +26,10 @@ def cached_json(func):
     func.cache = {}
     for dirname, __, files in walk(JSON_CACHE):
         for fp in files:
+            if path.splitext(fp)[1] != ".json":
+                continue
             try:
-                with open(f"{dirname}/{fp}.json", "r") as f:
+                with open(f"{dirname}/{fp}", "r") as f:
                     data = json.load(f)
                 func.cache[f"/{fp.replace('_', '/')}"] = data
             except json.decoder.JSONDecodeError as e:
@@ -64,4 +66,5 @@ def __SRD_API_CALL():
 
 SRD = __SRD_API_CALL()
 
-SRD("/api/classes/bard")
+SRD_endpoints = SRD("/api/")
+SRD_classes = SRD(SRD_endpoints["classes"])
