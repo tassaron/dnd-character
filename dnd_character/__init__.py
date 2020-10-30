@@ -18,55 +18,17 @@ __copyright__ = 'Copyright 2020'
 __credits__ = ['Brianna Rainey (Current Programmer)', 'Markis Cook (Original Creator)']
 __license__ = 'EPL-2.0'
 __version__ = '0.1.0'
-__maintainer__ = 'Briannna Rainey'
+__maintainer__ = 'Brianna Rainey'
 
-########################
-# START: PLAYER OBJECT #
-########################
-class Character(object):
-	"""Character Object deals with all aspects of the player character
-	
-	Character Object deals with all aspects of the player character to include
+
+class Character:
+	"""
+	Character Object deals with all aspects of the player character including
 	name, age, gender, description, biography, level, wealth, and all
-	player Ability scores.  All can be omitted to create a blank, level 1 
-	player and all values can be manually adjusted via the calling 
-	application.
-	
-	All given Args populate self.argname
-	
-	Args:
-		name         (str): Character character's name
-		age          (str): Character character's age
-		gender       (str): Character character's gender
-		alignment    (str): Character character's two letter alignment
-		description  (str): Physical description of Character character
-		biography    (str): Backstory of Character character
-		
-		level        (int): Character character's starting level
-		wealth       (int): Character character's starting wealth
-		
-		strength     (int): Character character's starting strength Ability Score
-		dexterity    (int): Character character's starting dexterity Ability Score
-		constitution (int): Character character's starting constitution Ability Score
-		wisdom       (int): Character character's starting wisdom Ability Score
-		intelligence (int): Character character's starting intelligence Ability Score
-		charisma     (int): Character character's starting charisma Ability Score
-		hp           (int): Character character's starting hitpoint value
-		mp           (int): Character character's starting mp value (may convert to SPD)
-		
-	Returns:
-		This object returns nothing.  Instead all Args populate self.argname
+	player ability scores.  All can be omitted to create a blank, level 1 
+	player.
 	"""
 
-	#######################################
-	# START: Character Object Initialization #
-	#############################################################################
-	#                                                                           #
-	#  All self.argname and methods under this section are solely dealing with  #
-	#  setting up the Character object and gathering the required information to   #
-	#  set all self variables.                                                  #
-	#                                                                           #
-	#############################################################################
 	def __init__(
 		self,
 		uid:               UUID = None,
@@ -93,14 +55,24 @@ class Character(object):
 		nextLvlExperience:  int = None,
 		inventory:          list= None,
 		invsize:            int = None):                
-		"""Object Initialization
-		
-		Object initialization, grabs all given Args and sets them to self.argname
-		note that all Args can be omitted and a Level 1, blank character will be
-		generated instead.
-		
-		Returns:
-			Nothing
+		"""
+		Typical Arguments:
+			name         (str)
+			age          (str)
+			gender       (str)
+			alignment    (str): two letter alignment (LE, TN, CN, LG, etc.)
+			description  (str): physical description of character
+			biography    (str): backstory of character
+			level        (int): character's starting level
+			wealth       (int): character's starting wealth
+			strength     (int): character's starting strength
+			dexterity    (int):  character's starting dexterity
+			constitution (int):  character's starting constitution
+			wisdom       (int):  character's starting wisdom
+			intelligence (int):  character's starting intelligence
+			charisma     (int):  character's starting charisma
+			hp           (int):  character's starting hitpoint value
+			mp           (int):  character's starting mp value
 		"""
                           
 		self.uid            = UUID(uid) if uid is not None else uuid4()   # Unique identifier for given player
@@ -110,19 +82,15 @@ class Character(object):
 		self.description    = description
 		self.biography      = biography
 
-		# Handle Alignment
 		self.alignment      = alignment
 		if self.alignment != None:
 			assert (len(self.alignment) == 2), "Alignments must be 2 letters (i.e LE, LG, TN, NG, CN)"
 			self.alignment = self.alignment.upper()
 
 		self.wealth         = wealth
-
-		# If wealth is omitted, set starting wealth to 0
 		if (self.wealth == None):
 			self.wealth = 0
 
-		# Levels
 		self.level          = level
 		self.experience     = experience
 		
@@ -161,18 +129,6 @@ class Character(object):
 		# Inventory (currently primitive)
 		self.inventory      = inventory if inventory is not None else []
 		self.invsize        = len(self.inventory)
-		#####################################
-		# END: Character Object Initialization #
-		#####################################
-
-	################################
-	# START: "Magic" Methods       #
-	##############################################################################
-	#                                                                            #
-	# Double-underscore methods that define how the object reacts to built-in    #
-	# functions such as str(), dict(), etc.
-	#                                                                            #
-	##############################################################################
 
 	def __str__(self):
 		return (
@@ -197,26 +153,11 @@ class Character(object):
 
 	def __getitem__(self, key):
 		return dict(zip(self.keys(), self.values()))[key]
-	
-	################################
-	# START: Levels and Experience #
-	##############################################################################
-	#                                                                            #
-	# All Methods under this section deal with Incrementing/Decrementing levels  #
-	# and managing experience.                                                   #
-	#                                                                            #
-	##############################################################################
+
 	def giveExp(self, xp):
-		"""Increment experience of player object
-		
-		This method increments the current self.experience of the
-		player object by the amount provided.
-		
-		Args:
-			xp (int): The amount of experience to increment self.experience by
-			
-		Returns:
-			This method returns nothing and instead modifies self.experience
+		"""
+		Increments the current self.experience of the
+		character object by the amount provided.
 			
 		Triggers:
 			self.LeveledUp(): Triggers every time, checks to see if player
@@ -238,27 +179,20 @@ class Character(object):
 			self.getExpForNextLevel()
 			
 	def removeExp(self, xp):
-		"""Decrements experience of player object
-		
-		This method decrements the current self.experience of the
-		player object by the amount specified
-		
-		Args:
-			xp (int): The amount of experience to decrement self.experience by
-			
-		Returns:
-			This method returns nothing and instead modifies self.experience
-			
+		"""
+		Decrements the current self.experience of the
+		character object by the amount specified
+
 		Triggers:
 			self.LeveledDown(): Triggered every time, checks to see if player
 					    lost the experience required to maintain their
 					    current level.
 					    
 			self.levelDown(): Triggers only if self.LeveledDown() is True
-					  decrements the level of the player object
+					  decrements the level of the character object
 					  
 			self.getExpForNextLevel(): Triggers ever time, checks the experience
-			                           needed to reach the next level for the player
+			                           needed to reach the next level for the character
 						   object
 		"""
 		self.experience -= xp
@@ -268,18 +202,13 @@ class Character(object):
 			self.getExpForNextLevel()
 
 	def LeveledUp(self):
-		"""Checks to see if player has leveled up
+		"""
+		Checks to see if character has leveled up
 		
 		This method checks the current experience against the experience
-		needed to gain the next level.  If the experience currently held is
+		needed to gain the next level. If the experience currently held is
 		greater than or equal to the needed experience (nextLvlExperience)
 		this method returns True, else it returns False
-		
-		Args:
-			None
-			
-		Returns:
-			Boolval
 		"""
 		if self.experience >= self.nextLvlExperience:
 			return True
@@ -287,17 +216,12 @@ class Character(object):
 			return False
 		
 	def LeveledDown(self):
-		"""Checks to see if player has leveled down
+		"""
+		Checks to see if character has leveled down
 		
 		This method checks the current experience against the experience
-		needed to gain their previous level.  If their experience drops
-		below that level, the player loses a level.
-		
-		Args:
-			None
-		
-		Returns:
-			Boolval
+		needed to gain their previous level. If their experience drops
+		below that level, the character loses a level.
 		"""
 		if self.experience < self.lastLevelExperience:
 			return True
@@ -305,7 +229,8 @@ class Character(object):
 			return False
 		
 	def getCurrentExperience(self):
-		"""Calculates the current experience of player
+		"""
+		Calculates the current experience
 		
 		This method calculates and sets the current experience of the
 		player character.  If self.experience has not been set (in
@@ -327,7 +252,7 @@ class Character(object):
 	def getExpForNextLevel(self):
 		"""Calculates the experience needed for next level
 		
-		This method calculates and sets the experience that the player
+		This method calculates and sets the experience that the character
 		requires to reach the next level given their current experience.
 		
 		Args:
@@ -344,7 +269,7 @@ class Character(object):
 			self.nextLvlExperience = int((self.lastLevelExperience + ((1000 * ((self.level+1) + self.nCr((self.level+1),2))) - ((self.level+1)*1000))) - self.experience)
 
 	def levelUp(self):
-		"""Handles player level up
+		"""Handles character level up
 		
 		This method triggers the getExpForNextLevel() method and then
 		increments the player character's level by one.
@@ -359,9 +284,9 @@ class Character(object):
 		self.level += 1
 		
 	def levelDown(self):
-		"""Handles player level down
+		"""Handles character level down
 		
-		This method decrements the players level by one first and 
+		This method decrements the characters level by one first and 
 		then triggers the getExpForNextLevel() method.
 		
 		Args:
@@ -373,7 +298,7 @@ class Character(object):
 		# Only Decrement level if level is higher than 1
 		if self.level > 1:
 			self.level -= 1
-		# If level is already at level 1, player cannot lose
+		# If level is already at level 1, character cannot lose
 		# a level and instead is reduced to 0 experience.
 		else:
 			self.level = 1
@@ -400,41 +325,25 @@ class Character(object):
 		self.inventory.remove(item)
 		self.updateInventory()
 	
-	####################################
-	# START: Wealth, Income, and Trade #
-	###############################################################################
-	#                                                                             #
-	# All methods below deal with the player objects Wealth, income, and trading  #
-	# of currencies (maybe item trading will go here as well?)                    #
-	#                                                                             #
-	###############################################################################
-	# Give wealth to player object
 	def giveWealth(self, amount):
-		"""Handles awarding players wealth
-		
-		The giveWealth() method increments the wealth of the player
-		object
-		
+		"""
+		Give wealth to character
+
 		Args:
 			amount
-		
+			
 		Returns:
 			None
 		"""
 		self.wealth += amount
 	
-	# Remove wealth from player object
 	def removeWealth(self, amount):
-		"""Handles removing wealth from the player
-		
-		The removeWealth() method decrements the wealth of the player
-		object by the amount supplied.  If the wealth of the player
-		object is not sufficient, the self.wealth of the player is
-		instead set to 0.
-		
+		"""
+		Remove wealth from character
+
 		Args:
 			amount
-			
+
 		Returns:
 			None
 		"""
@@ -443,15 +352,13 @@ class Character(object):
 		else:
 			self.wealth -= amount
 			
-	# Charge wealth from player object
 	def chargeWealth(self, amount):
-		"""Handles charging wealth from the player
-		
+		"""
 		The chargeWealth() method functions similarly to the
-		removeWealth() method.  However, instead of setting
+		removeWealth() method. However, instead of setting
 		self.wealth to 0 on the condition of not having enough,
 		chargeWealth() returns False and doesn't change the
-		value of self.wealth.  On success, self.removeWealth()
+		value of self.wealth. On success, self.removeWealth()
 		is triggered, the amount is removed, and chargeWealth()
 		returns True.
 		
@@ -462,9 +369,7 @@ class Character(object):
 			Boolval
 			
 		Triggers:
-			self.removeWealth(): Triggers if self.wealth of
-			                     player object contains enough
-					     wealth to remove amount from.
+			self.removeWealth() if self.wealth > amount
 		"""
 		if amount > self.wealth:
 			# Not enough for purchase
@@ -472,11 +377,7 @@ class Character(object):
 		else:
 			self.removeWealth(self, amount)
 			return True
-		####################################
-		#  END: Wealth, Income, and Trade  #
-		####################################
 
-	# Class Methods
 	@classmethod
 	def nCr(self,n,r):
 		r = min(r, n-r)
@@ -486,18 +387,15 @@ class Character(object):
 	
 	@classmethod
 	def setInitialAbilityScore(self, stat):
-		"""Handles setting initial Ability Scores
-		
-		The setInitialAbilityScore() method accepts a Stat arg.  If Stat is
-		None, then this method instead Rolls for the initial starting ability
-		score using the standard rolling method.
+		"""
+		Set ability score to an int. If the argument is None, then this method
+		instead rolls for the initial starting ability score.
 		
 		Args:
 			stat
 			
 		Returns:
-			roll: the RollStats() object.  Get value with roll.value
-			int(stat): The integer value of the supplied stat
+			the new ability score as an int
 		"""
 		if stat == None:
 			roll = RollStats()
@@ -506,10 +404,9 @@ class Character(object):
 			return int(stat)
 	
 	@classmethod
-	def getModifier(self,stat):
-		"""Returns modifier for given stat
-
-		This method returns the modifier for the given stat provided
+	def getModifier(self, stat):
+		"""
+		This method returns the modifier for the given stat
 
 		Args:
 			stat (int): The player ability score to calculate the modifier for
@@ -520,9 +417,8 @@ class Character(object):
 		"""
 		modifier = math.floor(stat/2)-5
 		return modifier	
-	#######################
-	# END: PLAYER OBJECT  #
-	#######################
+
+
 ######################
 # START: ROLL OBJECT #
 ######################
