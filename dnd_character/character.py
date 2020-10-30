@@ -4,6 +4,7 @@ import math
 import operator as op
 
 from .roll import RollStats
+from .classes import *
 
 
 class Character:
@@ -23,9 +24,9 @@ class Character:
         alignment: str = None,
         description: str = None,
         biography: str = None,
-        level: int = None,
+        level: int = 1,
         experience: int = 0,
-        wealth: int = None,
+        wealth: int = 0,
         strength: int = None,
         dexterity: int = None,
         constitution: int = None,
@@ -33,9 +34,15 @@ class Character:
         intelligence: int = None,
         charisma: int = None,
         hp: int = None,
-        mp: int = None,
-        skillpoints: int = 0,
-        featpoints: int = 0,
+        hd: str = None,
+        spells: dict = None,
+        spells_prepared: list = None,
+        spell_slots: dict = None,
+        skills_strength: dict = None,
+        skills_dexterity: dict = None,
+        skills_wisdom: dict = None,
+        skills_intelligence: dict = None,
+        skills_charisma: dict = None,
         lastLevelExperience: int = None,
         nextLvlExperience: int = None,
         inventory: list = None,
@@ -58,12 +65,9 @@ class Character:
                 intelligence (int):  character's starting intelligence
                 charisma     (int):  character's starting charisma
                 hp           (int):  character's starting hitpoint value
-                mp           (int):  character's starting mp value
         """
 
-        self.uid = (
-            UUID(uid) if uid is not None else uuid4()
-        )  # Unique identifier for given player
+        self.uid = UUID(uid) if uid is not None else uuid4()
         self.name = name
         self.age = age
         self.gender = gender
@@ -71,38 +75,23 @@ class Character:
         self.biography = biography
 
         self.alignment = alignment
-        if self.alignment != None:
+        if self.alignment is not None:
             assert (
                 len(self.alignment) == 2
             ), "Alignments must be 2 letters (i.e LE, LG, TN, NG, CN)"
             self.alignment = self.alignment.upper()
 
         self.wealth = wealth
-        if self.wealth == None:
-            self.wealth = 0
-
         self.level = level
         self.experience = experience
-
-        # If level is omitted, set starting level to 1
-        if self.level == None:
-            self.level = 1
-            self.experience = 0
-            self.getExpForNextLevel()
-        # If level not omitted, calculate the starting experience for
-        # provided level
-        else:
-            self.getCurrentExperience()
-            self.getExpForNextLevel()
+        self.getCurrentExperience()
+        self.getExpForNextLevel()
 
         # Sanity check
         if lastLevelExperience is not None:
             assert self.lastLevelExperience == lastLevelExperience
         if nextLvlExperience is not None:
             assert self.nextLvlExperience == nextLvlExperience
-
-        self.skillpoints = skillpoints
-        self.featpoints = featpoints
 
         # Ability Scores
         self.strength = self.setInitialAbilityScore(strength)
@@ -113,7 +102,15 @@ class Character:
         self.charisma = self.setInitialAbilityScore(charisma)
 
         self.hp = hp
-        self.mp = mp
+        self.hd = hd
+        self.spells = spells
+        self.spells_prepared = spells_prepared
+        self.spell_slots = spell_slots
+        self.skills_charisma = skills_charisma
+        self.skills_wisdom = skills_wisdom
+        self.skills_dexterity = skills_dexterity
+        self.skills_intelligence = skills_intelligence
+        self.skills_strength = skills_strength
 
         # Inventory (currently primitive)
         self.inventory = inventory if inventory is not None else []
