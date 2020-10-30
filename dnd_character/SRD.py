@@ -9,7 +9,7 @@ import logging
 
 
 LOG = logging.getLogger(__package__)
-LOG.setLevel(0)
+LOG.setLevel(logging.DEBUG)
 
 
 try:
@@ -31,24 +31,26 @@ def cached_json(func):
             try:
                 with open(f"{dirname}/{fp}", "r") as f:
                     data = json.load(f)
-                func.cache[f"/{fp.replace('_', '/')}"] = data
+                func.cache[f"/{fp.replace('_', '/')[:-5]}"] = data
             except json.decoder.JSONDecodeError as e:
                 LOG.error(f"{fp} failed to load: {str(e)}")
                 remove(f"{dirname}/{fp}")
 
-    @wraps(func)
-    def wrapper(uri):
-        try:
-            return func.cache[uri]
-        except KeyError:
-            LOG.debug(f"Uncached URI: {uri}")
-            func.cache[uri] = result = func(uri)
-            fp = f"{JSON_CACHE}/{uri[1:].replace('/', '_')}.json"
-            with open(fp, "w") as f:
-                f.write(json.dumps(result))
-            return result
+    def outer_wrapper(func):
+        def inner_wrapper(uri):
+            try:
+                return func.cache[uri]
+            except KeyError:
+                LOG.debug(f"Uncached URI: {uri}")
+                func.cache[uri] = result = func(uri)
+                fp = f"{JSON_CACHE}/{uri[1:].replace('/', '_')}.json"
+                with open(fp, "w") as f:
+                    f.write(json.dumps(result))
+                return result
 
-    return wrapper
+        return inner_wrapper
+
+    return outer_wrapper(func)
 
 
 def __SRD_API_CALL():
@@ -67,4 +69,6 @@ def __SRD_API_CALL():
 SRD = __SRD_API_CALL()
 
 SRD_endpoints = SRD("/api/")
-SRD_classes = SRD(SRD_endpoints["classes"])
+SRD_classes = {}
+for result in SRD(SRD_endpoints["classes"])["results"]:
+    SRD_classes[result["index"]] = SRD(result["url"])

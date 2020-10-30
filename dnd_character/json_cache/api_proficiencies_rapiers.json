@@ -1,0 +1,1 @@
+{"index": "rapiers", "type": "Weapons", "name": "Rapiers", "classes": [{"index": "bard", "name": "Bard", "url": "/api/classes/bard"}, {"index": "rogue", "name": "Rogue", "url": "/api/classes/rogue"}], "races": [], "url": "/api/proficiencies/rapiers", "references": [{"index": "rapier", "type": "equipment", "name": "Rapier", "url": "/api/equipment/rapier"}]}

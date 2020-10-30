@@ -4,6 +4,7 @@ import math
 import operator as op
 
 from .roll import RollStats
+from .SRD import SRD
 
 
 class Character:
@@ -23,6 +24,8 @@ class Character:
         alignment: str = None,
         description: str = None,
         biography: str = None,
+        classs: dict = None,
+        class_name: str = None,
         level: int = 1,
         experience: int = 0,
         wealth: int = 0,
@@ -34,6 +37,7 @@ class Character:
         charisma: int = None,
         hp: int = None,
         hd: str = None,
+        proficiencies: dict = None,
         spells: dict = None,
         spells_prepared: list = None,
         spell_slots: dict = None,
@@ -81,6 +85,7 @@ class Character:
             self.alignment = self.alignment.upper()
 
         self.wealth = wealth
+        self.class_name = class_name
         self.level = level
         self.experience = experience
         self.getCurrentExperience()
@@ -102,6 +107,7 @@ class Character:
 
         self.hp = hp
         self.hd = hd
+        self.proficiencies = proficiencies if proficiencies is not None else {}
         self.spells = spells
         self.spells_prepared = spells_prepared
         self.spell_slots = spell_slots
@@ -114,6 +120,8 @@ class Character:
         # Inventory (currently primitive)
         self.inventory = inventory if inventory is not None else []
         self.invsize = len(self.inventory)
+
+        self.classs = classs
 
     def __str__(self):
         return (
@@ -128,7 +136,7 @@ class Character:
         )
 
     def keys(self):
-        return [key for key in self.__dict__ if not key.startswith("__")]
+        return [key for key in self.__dict__ if not key.startswith("_")]
 
     def values(self):
         return [
@@ -139,6 +147,19 @@ class Character:
 
     def __getitem__(self, key):
         return dict(zip(self.keys(), self.values()))[key]
+
+    @property
+    def classs(self):
+        return self.__class
+
+    @classs.setter
+    def classs(self, new_class):
+        self.__class = new_class
+        if new_class is not None:
+            self.class_name = new_class["name"]
+            self.hd = new_class["hit_die"]
+            for proficiency in new_class["proficiencies"]:
+                self.proficiencies[proficiency["index"]] = SRD(proficiency["url"])
 
     def giveExp(self, xp):
         """
