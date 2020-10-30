@@ -1,4 +1,1 @@
-include ./dnd_character/resources/classes.json
-include ./dnd_character/resources/feats.json
-include ./dnd_character/resources/skills.json
-include ./dnd_character/resources/spells.json
+include ./dnd_character/json.cache

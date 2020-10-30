@@ -1,5 +1,7 @@
 # dnd-character
-A Python library to make Dungeons & Dragons characters for use in another app. Forked and significantly refactored from [PyDnD](https://github.com/Coffee-fueled-deadlines/PyDnD).
+A Python library to make 5e Dungeons & Dragons characters for use in another app. Characters are serializable into Python dicts so they can be saved and loaded however you wish. SRD rules are fetched from the [5e SRD API](https://github.com/bagelbits/5e-srd-api) the first time they're requested, then the JSON is cached locally for faster retrieval in the future.
+
+Originally forked from [PyDnD](https://github.com/Coffee-fueled-deadlines/PyDnD).
 
 
 # Installation
