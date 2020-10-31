@@ -4,11 +4,11 @@ from dnd_character.__init__ import __version__, __author__, __credits__
 
 try:
     with open(
-        path.join(path.abspath(path.dirname(__file__)), "readme.md"), encoding="utf-8"
+        path.join(path.abspath(path.dirname(__file__)), "README.md"), encoding="utf-8"
     ) as f:
         long_description = f.read()
 except Exception:
-    long_description = "missing readme.md"
+    long_description = "missing README.md"
 
 setup(
     name="dnd_character",
@@ -31,4 +31,5 @@ setup(
         "Programming Language :: Python :: 3.6",
         "License :: OSI Approved :: Eclipse Public License 2.0 (EPL-2.0)",
     ],
+    install_requires=["requests"],
 )
