@@ -1,4 +1,5 @@
 from dnd_character import Character
+from dnd_character.SRD import SRD_classes
 
 
 if __name__ == "__main__":
@@ -9,6 +10,7 @@ if __name__ == "__main__":
         gender="Male",
         description="Looks like a pirate angel",
         biography="Born on Asgard, God of Thunder",
+        classs=SRD_classes["fighter"],
     )
 
     # newCharacter is created, lets display some stats

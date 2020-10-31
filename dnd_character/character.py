@@ -134,7 +134,7 @@ class Character:
             f"Level: {str(self.level)}\n"
             f"Current Experience: {str(self.experience)}\n"
             f"EXP to next Level: {str(self.nextLvlExperience)}\n\n"
-            f"Proficiencies:\n{self.proficiencies}\n\n"
+            f"Proficiencies:\n{', '.join([value['name'] for value in self.proficiencies.values()])}\n\n"
         )
 
     def keys(self):
@@ -160,8 +160,14 @@ class Character:
         if new_class is not None:
             self.class_name = new_class["name"]
             self.hd = new_class["hit_die"]
+
+            # create dict such as { "all-armor": {"name": "All armor", "type": "Armor"} }
             for proficiency in new_class["proficiencies"]:
-                self.proficiencies[proficiency["index"]] = SRD(proficiency["url"])
+                data = SRD(proficiency["url"])
+                self.proficiencies[proficiency["index"]] = {
+                    "name": data["name"],
+                    "type": data["type"],
+                }
 
     def giveExp(self, xp):
         """
