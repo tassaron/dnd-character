@@ -130,9 +130,11 @@ class Character:
             f"Gender: {self.gender}\n"
             f"Description: {self.description}\n"
             f"Biography:\n{self.biography}\n\n"
+            f"Class: {self.class_name}\n"
             f"Level: {str(self.level)}\n"
             f"Current Experience: {str(self.experience)}\n"
-            f"EXP to next Level: {str(self.nextLvlExperience)}\n"
+            f"EXP to next Level: {str(self.nextLvlExperience)}\n\n"
+            f"Proficiencies:\n{self.proficiencies}\n\n"
         )
 
     def keys(self):

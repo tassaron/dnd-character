@@ -1,5 +1,4 @@
 from dnd_character import Character
-from dnd_character import Roll
 
 
 if __name__ == "__main__":
@@ -13,27 +12,11 @@ if __name__ == "__main__":
     )
 
     # newCharacter is created, lets display some stats
-    print("Name:" + newCharacter.name)
-    print("Age: " + newCharacter.age)
-    print("Gender:" + newCharacter.gender)
-    print("Description: " + newCharacter.description)
-    print("Biography: " + newCharacter.biography)
+    print(str(newCharacter))
 
-    print("\n")
-
-    print(
-        "Level: " + str(newCharacter.level)
-    )  # Level isn't specified in creation, so level is 1
-    print(
-        "Current Experience: " + str(newCharacter.experience)
-    )  # Level wasn't specified, so current xp is 0
-    print(
-        "EXP to next Level: " + str(newCharacter.nextLvlExperience)
-    )  # 1000 Experience is required to get to level 2
-    print("\n\n\n")
     # Lets see what Thor looks like as a level 2
-
     newCharacter.giveExp(1000)
+    print("Thor at level 2:")
     print(
         "New Level: " + str(newCharacter.level)
     )  # newCharacter.level is automatically increased when XP threshold increases
