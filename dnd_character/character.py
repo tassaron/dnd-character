@@ -26,6 +26,7 @@ class Character:
         biography: str = None,
         classs: dict = None,
         class_name: str = None,
+        class_levels: list = None,
         level: int = 1,
         experience: int = 0,
         wealth: int = 0,
@@ -51,6 +52,9 @@ class Character:
         nextLvlExperience: int = None,
         inventory: list = None,
         invsize: int = None,
+        prof_bonus: int = 0,
+        ability_score_bonus: int = 0,
+        class_features: dict = None,
     ):
         """
         Typical Arguments:
@@ -87,8 +91,14 @@ class Character:
 
         self.wealth = wealth
         self.class_name = class_name
-        self.level = level
+        self.class_levels = class_levels if class_levels is not None else []
         self.experience = experience
+
+        if level is None:
+            self.level = 0
+            self.levelUp()
+        else:
+            self.level = level
         self.getCurrentExperience()
         self.getExpForNextLevel()
 
@@ -124,6 +134,9 @@ class Character:
         self.inventory = inventory if inventory is not None else []
         self.invsize = len(self.inventory)
 
+        self.prof_bonus = prof_bonus
+        self.ability_score_bonus = ability_score_bonus
+        self.class_features = class_features if class_features is not None else {}
         self.classs = classs
 
     def __str__(self):
@@ -139,6 +152,7 @@ class Character:
             f"EXP to next Level: {str(self.nextLvlExperience)}\n\n"
             f"Proficiencies:\n{', '.join([value['name'] for value in self.proficiencies.values()])}\n\n"
             f"Inventory:\n{', '.join([item['name'] for item in self.inventory])}\n\n"
+            f"Class Features:\n{', '.join([item['name'] for item in self.class_features.values()])}\n\n"
         )
 
     def keys(self):
@@ -180,6 +194,9 @@ class Character:
             for item in SRD(new_class["starting_equipment"])["starting_equipment"]:
                 for i in range(item["quantity"]):
                     self.giveItem(SRD(item["equipment"]["url"]))
+
+            self.class_levels = SRD(new_class["class_levels"])
+            self.applyClassLevel()
 
     def giveExp(self, xp):
         """
@@ -322,6 +339,17 @@ class Character:
         """
         self.getExpForNextLevel()
         self.level += 1
+        self.applyClassLevel()
+
+    def applyClassLevel(self):
+        if self.level <= len(self.class_levels):
+            data = self.class_levels[self.level - 1]
+            self.ability_score_bonus = data.get(
+                "ability_score_bonuses", self.ability_score_bonus
+            )
+            self.prof_bonus = data.get("prof_bonus", self.prof_bonus)
+            for feat in data["features"]:
+                self.class_features[feat["index"]] = SRD(feat["url"])
 
     def levelDown(self):
         """Handles character level down

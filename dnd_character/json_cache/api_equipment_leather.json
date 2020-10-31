@@ -1,0 +1,1 @@
+{"index": "leather", "name": "Leather", "equipment_category": {"index": "armor", "name": "Armor", "url": "/api/equipment-categories/armor"}, "armor_category": "Light", "armor_class": {"base": 11, "dex_bonus": true, "max_bonus": null}, "str_minimum": 0, "stealth_disadvantage": false, "weight": 10, "cost": {"quantity": 10, "unit": "gp"}, "url": "/api/equipment/leather"}
