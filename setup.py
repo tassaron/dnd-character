@@ -17,7 +17,7 @@ setup(
     packages=find_packages(),
     include_package_data=True,
     version=__version__,
-    url="https://github.com/tassaron2/dnd_character",
+    url="https://github.com/tassaron2/dnd-character",
     license="EPL-2.0",
     description="make Dungeons & Dragons characters as serializable objects",
     long_description=long_description,
