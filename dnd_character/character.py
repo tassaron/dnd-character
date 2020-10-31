@@ -38,6 +38,7 @@ class Character:
         hp: int = None,
         hd: str = None,
         proficiencies: dict = None,
+        saving_throws: list = None,
         spells: dict = None,
         spells_prepared: list = None,
         spell_slots: dict = None,
@@ -105,9 +106,11 @@ class Character:
         self.intelligence = self.setInitialAbilityScore(intelligence)
         self.charisma = self.setInitialAbilityScore(charisma)
 
+        # Spells, Skills, Proficiencies
         self.hp = hp
         self.hd = hd
         self.proficiencies = proficiencies if proficiencies is not None else {}
+        self.saving_throws = saving_throws if saving_throws is not None else []
         self.spells = spells
         self.spells_prepared = spells_prepared
         self.spell_slots = spell_slots
@@ -135,6 +138,7 @@ class Character:
             f"Current Experience: {str(self.experience)}\n"
             f"EXP to next Level: {str(self.nextLvlExperience)}\n\n"
             f"Proficiencies:\n{', '.join([value['name'] for value in self.proficiencies.values()])}\n\n"
+            f"Inventory:\n{', '.join([item['name'] for item in self.inventory])}\n\n"
         )
 
     def keys(self):
@@ -168,6 +172,14 @@ class Character:
                     "name": data["name"],
                     "type": data["type"],
                 }
+
+            self.saving_throws = [
+                saving_throw["name"] for saving_throw in new_class["saving_throws"]
+            ]
+
+            for item in SRD(new_class["starting_equipment"])["starting_equipment"]:
+                for i in range(item["quantity"]):
+                    self.giveItem(SRD(item["equipment"]["url"]))
 
     def giveExp(self, xp):
         """

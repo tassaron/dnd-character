@@ -10,7 +10,7 @@ if __name__ == "__main__":
         gender="Male",
         description="Looks like a pirate angel",
         biography="Born on Asgard, God of Thunder",
-        classs=SRD_classes["fighter"],
+        classs=SRD_classes["wizard"],
     )
 
     # newCharacter is created, lets display some stats
