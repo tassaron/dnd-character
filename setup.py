@@ -31,5 +31,6 @@ setup(
         "Programming Language :: Python :: 3.6",
         "License :: OSI Approved :: Eclipse Public License 2.0 (EPL-2.0)",
     ],
-    install_requires=["requests"],
+    # requests is needed in development to update the json_cache
+    # install_requires=["requests"],
 )

@@ -1,7 +1,6 @@
 """
 A cached function that gets SRD data from a DND 5e REST API
 """
-import requests
 import json
 from os import environ, walk, path, remove
 from functools import wraps
@@ -61,6 +60,10 @@ def __SRD_API_CALL():
 
     @cached_json
     def get_from_SRD(uri):
+        import requests
+
+        LOG.warning(f"Live API request! {str(uri)}")
+
         return requests.get(f"{SRD_API}{uri}").json()
 
     return get_from_SRD
