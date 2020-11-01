@@ -1,0 +1,1 @@
+{"index": "clubs", "type": "Weapons", "name": "Clubs", "classes": [{"index": "druid", "name": "Druid", "url": "/api/classes/druid"}], "races": [], "url": "/api/proficiencies/clubs", "references": [{"index": "club", "type": "equipment", "name": "Club", "url": "/api/equipment/club"}]}

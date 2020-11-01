@@ -1,0 +1,1 @@
+{"index": "bonus-proficiency", "class": {"index": "cleric", "name": "Cleric", "url": "/api/classes/cleric"}, "subclass": {"index": "life", "name": "Life", "url": "/api/subclasses/life"}, "name": "Bonus Proficiency", "level": 1, "desc": ["When you choose this domain at 1st level, you gain proficiency with heavy armor."], "url": "/api/features/bonus-proficiency"}

@@ -1,0 +1,1 @@
+{"index": "chain-mail", "name": "Chain Mail", "equipment_category": {"index": "armor", "name": "Armor", "url": "/api/equipment-categories/armor"}, "armor_category": "Heavy", "armor_class": {"base": 16, "dex_bonus": false, "max_bonus": null}, "str_minimum": 13, "stealth_disadvantage": true, "weight": 55, "cost": {"quantity": 75, "unit": "gp"}, "url": "/api/equipment/chain-mail"}

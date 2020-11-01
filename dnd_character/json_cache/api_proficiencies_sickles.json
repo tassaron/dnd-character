@@ -1,0 +1,1 @@
+{"index": "sickles", "type": "Weapons", "name": "Sickles", "classes": [{"index": "druid", "name": "Druid", "url": "/api/classes/druid"}], "races": [], "url": "/api/proficiencies/sickles", "references": [{"index": "sickle", "type": "equipment", "name": "Sickle", "url": "/api/equipment/sickle"}]}
