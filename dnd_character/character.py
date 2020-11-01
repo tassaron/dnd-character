@@ -1,10 +1,14 @@
 from uuid import uuid4, UUID
 from functools import reduce
 import math
-import operator as op
+import logging
 
 from .roll import RollStats
 from .SRD import SRD
+from .experience import Experience, experience_at_level
+
+
+LOG = logging.getLogger(__package__)
 
 
 class Character:
@@ -48,8 +52,6 @@ class Character:
         skills_wisdom: dict = None,
         skills_intelligence: dict = None,
         skills_charisma: dict = None,
-        lastLevelExperience: int = None,
-        nextLvlExperience: int = None,
         inventory: list = None,
         invsize: int = None,
         prof_bonus: int = 0,
@@ -92,21 +94,18 @@ class Character:
         self.wealth = wealth
         self.class_name = class_name
         self.class_levels = class_levels if class_levels is not None else []
-        self.experience = experience
-
-        if level is None:
-            self.level = 0
-            self.levelUp()
-        else:
-            self.level = level
-        self.getCurrentExperience()
-        self.getExpForNextLevel()
-
-        # Sanity check
-        if lastLevelExperience is not None:
-            assert self.lastLevelExperience == lastLevelExperience
-        if nextLvlExperience is not None:
-            assert self.nextLvlExperience == nextLvlExperience
+        self.experience = Experience(character=self, experience=int(experience))
+        if level != self.level:
+            if self._experience._experience == 0:
+                # if only level is specified, set the experience to the amount for that level
+                self.experience = experience_at_level(level)
+            else:
+                # the Experience object normally handles the Character object's level attr
+                # but if a user changes their level manually, it should override this anyway
+                LOG.info(
+                    f"Custom level for {str(self.name)}: {str(level)} instead of {str(self.level)}"
+                )
+                self.level = level
 
         # Ability Scores
         self.strength = self.setInitialAbilityScore(strength)
@@ -149,7 +148,7 @@ class Character:
             f"Class: {self.class_name}\n"
             f"Level: {str(self.level)}\n"
             f"Current Experience: {str(self.experience)}\n"
-            f"EXP to next Level: {str(self.nextLvlExperience)}\n\n"
+            f"EXP to next Level: {str(self.experience.to_next_level)}\n\n"
             f"Proficiencies:\n{', '.join([value['name'] for value in self.proficiencies.values()])}\n\n"
             f"Inventory:\n{', '.join([item['name'] for item in self.inventory])}\n\n"
             f"Class Features:\n{', '.join([item['name'] for item in self.class_features.values()])}\n\n"
@@ -160,13 +159,26 @@ class Character:
 
     def values(self):
         return [
-            value if key != "uid" else str(value)
+            value if key not in ("uid", "experience") else str(value)
             for key, value in self.__dict__.items()
-            if not key.startswith("__")
+            if not key.startswith("_")
         ]
 
     def __getitem__(self, key):
         return dict(zip(self.keys(), self.values()))[key]
+
+    @property
+    def experience(self):
+        return self._experience.experience
+
+    @experience.setter
+    def experience(self, new_val):
+        if new_val is None:
+            pass
+        elif type(new_val) is Experience:
+            self._experience = new_val
+        else:
+            self._experience.experience = new_val
 
     @property
     def classs(self):
@@ -198,148 +210,7 @@ class Character:
             self.class_levels = SRD(new_class["class_levels"])
             self.applyClassLevel()
 
-    def giveExp(self, xp):
-        """
-        Increments the current self.experience of the
-        character object by the amount provided.
-
-        Triggers:
-                self.LeveledUp(): Triggers every time, checks to see if player
-                                  has gained the experience required to acheive
-                                  the next level.
-
-                self.levelUp(): Triggers when self.LeveledUp() is True, increments
-                                the player object's level by one and gets the
-                                experience needed for the next level.
-
-                self.getExpForNextLevel(): Triggers when self.LeveledUp() is False
-                                           and gets the Experience needed for the
-                                           next level.
-        """
-        self.experience += xp
-        while self.LeveledUp():
-            self.levelUp()
-        else:
-            self.getExpForNextLevel()
-
-    def removeExp(self, xp):
-        """
-        Decrements the current self.experience of the
-        character object by the amount specified
-
-        Triggers:
-                self.LeveledDown(): Triggered every time, checks to see if player
-                                    lost the experience required to maintain their
-                                    current level.
-
-                self.levelDown(): Triggers only if self.LeveledDown() is True
-                                  decrements the level of the character object
-
-                self.getExpForNextLevel(): Triggers ever time, checks the experience
-                                           needed to reach the next level for the character
-                                           object
-        """
-        self.experience -= xp
-        while self.LeveledDown():
-            self.levelDown()
-        else:
-            self.getExpForNextLevel()
-
-    def LeveledUp(self):
-        """
-        Checks to see if character has leveled up
-
-        This method checks the current experience against the experience
-        needed to gain the next level. If the experience currently held is
-        greater than or equal to the needed experience (nextLvlExperience)
-        this method returns True, else it returns False
-        """
-        if self.experience >= self.nextLvlExperience:
-            return True
-        else:
             return False
-
-    def LeveledDown(self):
-        """
-        Checks to see if character has leveled down
-
-        This method checks the current experience against the experience
-        needed to gain their previous level. If their experience drops
-        below that level, the character loses a level.
-        """
-        if self.experience < self.lastLevelExperience:
-            return True
-        else:
-            return False
-
-    def getCurrentExperience(self):
-        """
-        Calculates the current experience
-
-        This method calculates and sets the current experience of the
-        player character.  If self.experience has not been set (in
-        the event of a new character) then this method instead sets
-        the current self.experience to the experience amount for that
-        given level.
-
-        Args:
-                None
-
-        Returns:
-                None
-        """
-        try:
-            self.experience = self.experience
-        except:
-            self.experience = int(
-                1000 * (self.level + Character.nCr(self.level, 2))
-            ) - (self.level * 1000)
-
-    def getExpForNextLevel(self):
-        """Calculates the experience needed for next level
-
-        This method calculates and sets the experience that the character
-        requires to reach the next level given their current experience.
-
-        Args:
-                None
-
-        Returns:
-                None
-        """
-        if self.level == 1:
-            self.lastLevelExperience = 0
-            self.nextLvlExperience = 1000 - self.experience
-        elif self.level > 1:
-            self.lastLevelExperience = (
-                1000 * (self.level + Character.nCr(self.level, 2))
-            ) - (self.level * 1000)
-            self.nextLvlExperience = int(
-                (
-                    self.lastLevelExperience
-                    + (
-                        (1000 * ((self.level + 1) + self.nCr((self.level + 1), 2)))
-                        - ((self.level + 1) * 1000)
-                    )
-                )
-                - self.experience
-            )
-
-    def levelUp(self):
-        """Handles character level up
-
-        This method triggers the getExpForNextLevel() method and then
-        increments the player character's level by one.
-
-        Args:
-                None
-
-        Returns:
-                None
-        """
-        self.getExpForNextLevel()
-        self.level += 1
-        self.applyClassLevel()
 
     def applyClassLevel(self):
         if self.level <= len(self.class_levels):
@@ -350,32 +221,6 @@ class Character:
             self.prof_bonus = data.get("prof_bonus", self.prof_bonus)
             for feat in data["features"]:
                 self.class_features[feat["index"]] = SRD(feat["url"])
-
-    def levelDown(self):
-        """Handles character level down
-
-        This method decrements the characters level by one first and
-        then triggers the getExpForNextLevel() method.
-
-        Args:
-                None
-
-        Returns:
-                None
-        """
-        # Only Decrement level if level is higher than 1
-        if self.level > 1:
-            self.level -= 1
-        # If level is already at level 1, character cannot lose
-        # a level and instead is reduced to 0 experience.
-        else:
-            self.level = 1
-            self.experience = 0
-        # Regardless, get Experience for next Level
-        self.getExpForNextLevel()
-        ##############################
-        # END: Levels and Experience #
-        ##############################
 
     # Inventory and Inventory management (Primitive)
     def getInventorySize(self):
@@ -445,13 +290,6 @@ class Character:
         else:
             self.removeWealth(self, amount)
             return True
-
-    @classmethod
-    def nCr(self, n, r):
-        r = min(r, n - r)
-        numer = reduce(op.mul, range(n, n - r, -1), 1)
-        denom = reduce(op.mul, range(1, r + 1), 1)
-        return numer / denom
 
     @classmethod
     def setInitialAbilityScore(self, stat):

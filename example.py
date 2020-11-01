@@ -1,30 +1,40 @@
 from dnd_character import Character
-from dnd_character.SRD import SRD_classes
+from dnd_character.classes import CLASSES
+from dnd_character.experience import experience_at_level
 
 
 if __name__ == "__main__":
 
-    newCharacter = Character(
+    thor = Character(
         name="Thor Odinson",
         age="34",
+        level=1,
         gender="Male",
         description="Looks like a pirate angel",
         biography="Born on Asgard, God of Thunder",
-        classs=SRD_classes["wizard"],
+        classs=CLASSES["wizard"],
     )
 
-    # newCharacter is created, lets display some stats
-    print(str(newCharacter))
+    # Thor is created, lets display some stats
+    print(str(thor))
 
-    # Lets see what Thor looks like as a level 2
-    newCharacter.giveExp(1000)
+    # Let's see what Thor looks like as a level 2
+    thor.experience += 300
     print("Thor at level 2:")
-    print(
-        "New Level: " + str(newCharacter.level)
-    )  # newCharacter.level is automatically increased when XP threshold increases
-    print(
-        "Current Experience: " + str(newCharacter.experience)
-    )  # Current, experience after leveling up
-    print(
-        "EXP to next Level: " + str(newCharacter.nextLvlExperience)
-    )  # 3000 Experience is required to get to level 3
+    print(f"New Level: {str(thor.level)}")
+    print(f"Current Experience: {str(thor.experience)}")
+    print(f"EXP to next Level: {str(thor.experience.to_next_level)}")
+
+    print()
+    thor.experience = experience_at_level(5)
+    print("Setting experience to level 5:")
+    print(f"New Level: {str(thor.level)}")
+    print(f"Current Experience: {str(thor.experience)}")
+    print(f"EXP to next Level: {str(thor.experience.to_next_level)}")
+
+    print()
+    thor.experience -= 1
+    print("Reducing experience by 1:")
+    print(f"New Level: {str(thor.level)}")
+    print(f"Current Experience: {str(thor.experience)}")
+    print(f"EXP to next Level: {str(thor.experience.to_next_level)}")

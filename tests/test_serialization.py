@@ -24,3 +24,9 @@ def test_save_and_load_lvl3_bard():
     player = Character(level=3, classs=SRD_classes["bard"])
     clone = Character(**dict(player))
     assert dict(player) == dict(clone)
+
+
+def test_save_and_load_custom_lvl_character():
+    player = Character(level=3, experience=100)
+    clone = Character(**dict(player))
+    assert dict(player) == dict(clone)

@@ -37,4 +37,15 @@ In addition, the Character object can receive attributes that are normally set a
 
 
 ## Leveling and Experience
-The library should help leveling up characters automatically if you call Character.giveExp(amount)
+The library should help leveling up characters automatically if simply manage the Character's `experience` attribute. It's better to avoid modifying the level directly.
+
+### Example
+  >>> thor = Character(name="Thor")
+  >>> thor.experience += 1000
+  >>> thor.level
+  3
+  >>> thor.experience.to_next_level
+  1700
+  >>> thor.experience += thor.experience.to_next_level
+  >>> thor.level
+  4
