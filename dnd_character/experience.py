@@ -24,8 +24,11 @@ class Experience:
     def experience(self):
         return self
 
+    """
+
     def __call__(self):
         return self._experience
+    """
 
     def __eq__(self, other):
         return self._experience == other
