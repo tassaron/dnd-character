@@ -94,6 +94,9 @@ class Character:
         self.wealth = wealth
         self.class_name = class_name
         self.class_levels = class_levels if class_levels is not None else []
+        self.prof_bonus = prof_bonus
+        self.ability_score_bonus = ability_score_bonus
+        self.class_features = class_features if class_features is not None else {}
         self.experience = Experience(character=self, experience=int(experience))
         if level != self.level:
             if self._experience._experience == 0:
@@ -133,9 +136,6 @@ class Character:
         self.inventory = inventory if inventory is not None else []
         self.invsize = len(self.inventory)
 
-        self.prof_bonus = prof_bonus
-        self.ability_score_bonus = ability_score_bonus
-        self.class_features = class_features if class_features is not None else {}
         self.classs = classs
 
     def __str__(self):

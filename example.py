@@ -12,7 +12,7 @@ if __name__ == "__main__":
         gender="Male",
         description="Looks like a pirate angel",
         biography="Born on Asgard, God of Thunder",
-        classs=CLASSES["wizard"],
+        classs=CLASSES["fighter"],
     )
 
     # Thor is created, lets display some stats
@@ -38,3 +38,7 @@ if __name__ == "__main__":
     print(f"New Level: {str(thor.level)}")
     print(f"Current Experience: {str(thor.experience)}")
     print(f"EXP to next Level: {str(thor.experience.to_next_level)}")
+
+    print("\nThor's class features at level 20: ")
+    thor.experience = experience_at_level(20)
+    print(", ".join([feat["name"] for feat in thor.class_features.values()]))

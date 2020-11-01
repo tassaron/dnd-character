@@ -16,7 +16,9 @@ class Experience:
         self.character.level = level_at_experience(experience)
 
     def update_level(self):
-        self.character.level = level_at_experience(self._experience)
+        if self.character.level != level_at_experience(self._experience):
+            self.character.level = level_at_experience(self._experience)
+            self.character.applyClassLevel()
 
     @property
     def experience(self):
@@ -57,7 +59,10 @@ class Experience:
                 f" which means to_next_level returned 0"
             )
             return 0
-        return level_progression[self.character.level + 1] - self._experience
+        try:
+            return level_progression[self.character.level + 1] - self._experience
+        except IndexError:
+            return 0
 
     @property
     def to_last_level(self):
@@ -70,7 +75,10 @@ class Experience:
                 f" which means to_last_level returned 0"
             )
             return 0
-        return self._experience - level_progression[self.character.level]
+        try:
+            return self._experience - level_progression[self.character.level]
+        except IndexError:
+            return 0
 
 
 @lru_cache
@@ -79,7 +87,7 @@ def level_at_experience(num):
         if num >= threshold:
             continue
         return level - 1
-    return 19
+    return 20
 
 
 def experience_at_level(num):
