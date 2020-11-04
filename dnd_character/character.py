@@ -97,11 +97,11 @@ class Character:
         self.prof_bonus = prof_bonus
         self.ability_score_bonus = ability_score_bonus
         self.class_features = class_features if class_features is not None else {}
-        self.experience = Experience(character=self, experience=int(experience))
+        self._experience = Experience(character=self, experience=int(experience))
         if level != self.level:
-            if self._experience._experience == 0:
+            if self._experience.experience == 0:
                 # if only level is specified, set the experience to the amount for that level
-                self.experience = experience_at_level(level)
+                self._experience.experience = experience_at_level(level)
             else:
                 # the Experience object normally handles the Character object's level attr
                 # but if a user changes their level manually, it should override this anyway

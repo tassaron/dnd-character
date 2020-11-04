@@ -75,3 +75,10 @@ SRD_endpoints = SRD("/api/")
 SRD_classes = {}
 for result in SRD(SRD_endpoints["classes"])["results"]:
     SRD_classes[result["index"]] = SRD(result["url"])
+SRD_rules = {
+    category["name"]: {
+        subsection["name"]: SRD(subsection["url"])["desc"]
+        for subsection in SRD(category["url"])["subsections"]
+    }
+    for category in SRD(SRD_endpoints["rules"])["results"]
+}
