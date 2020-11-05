@@ -15,20 +15,9 @@ class Experience:
         self._experience = experience
         self.character.level = level_at_experience(experience)
 
-    def update_level(self):
-        if self.character.level != level_at_experience(self._experience):
-            self.character.level = level_at_experience(self._experience)
-            self.character.applyClassLevel()
-
     @property
     def experience(self):
         return self
-
-    """
-
-    def __call__(self):
-        return self._experience
-    """
 
     def __eq__(self, other):
         return self._experience == other
@@ -36,7 +25,7 @@ class Experience:
     @experience.setter
     def experience(self, new_val):
         self._experience = new_val
-        self.update_level()
+        self.character.level = level_at_experience(self._experience)
 
     def __add__(self, new_val):
         return self._experience + int(new_val)

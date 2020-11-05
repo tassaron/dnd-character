@@ -44,3 +44,11 @@ def test_save_and_load_experience():
     clone = Character(**dict(player))
     assert player._experience._experience == clone._experience._experience
     assert player.experience.to_next_level == clone.experience.to_next_level
+
+
+def test_save_and_load_leveled_up_character():
+    player = Character(classs=SRD_classes["bard"])
+    for i in range(900):
+        player.experience += 1
+    clone = Character(**dict(player))
+    assert dict(player) == dict(clone)

@@ -12,4 +12,15 @@ __version__ = "20.11.03"
 __maintainer__ = "Brianna Rainey"
 
 
-from .character import Character
+from .character import Character as CharacterObj
+
+
+def Character(**kwargs):
+    """
+    Factory function for a new Character
+    """
+    new = CharacterObj(**kwargs)
+    if "experience" in kwargs:
+        new.experience = kwargs["experience"]
+        new._level = kwargs.get("level", new._level)
+    return new

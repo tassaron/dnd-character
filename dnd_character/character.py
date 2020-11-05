@@ -44,7 +44,8 @@ class Character:
         hd: str = None,
         proficiencies: dict = None,
         saving_throws: list = None,
-        spells: dict = None,
+        cantrips_known: dict = None,
+        spells_known: dict = None,
         spells_prepared: list = None,
         spell_slots: dict = None,
         skills_strength: dict = None,
@@ -57,6 +58,7 @@ class Character:
         prof_bonus: int = 0,
         ability_score_bonus: int = 0,
         class_features: dict = None,
+        class_spellcasting: dict = None,
     ):
         """
         Typical Arguments:
@@ -97,8 +99,12 @@ class Character:
         self.prof_bonus = prof_bonus
         self.ability_score_bonus = ability_score_bonus
         self.class_features = class_features if class_features is not None else {}
-        self._experience = Experience(character=self, experience=int(experience))
-        if level != self.level:
+        self.class_spellcasting = (
+            class_spellcasting if class_spellcasting is not None else {}
+        )
+        self._level = 1
+        self._experience = Experience(character=self, experience=experience)
+        if level != self._level:
             if self._experience.experience == 0:
                 # if only level is specified, set the experience to the amount for that level
                 self._experience.experience = experience_at_level(level)
@@ -108,7 +114,7 @@ class Character:
                 LOG.info(
                     f"Custom level for {str(self.name)}: {str(level)} instead of {str(self.level)}"
                 )
-                self.level = level
+                self._level = level
 
         # Ability Scores
         self.strength = self.setInitialAbilityScore(strength)
@@ -123,7 +129,8 @@ class Character:
         self.hd = hd
         self.proficiencies = proficiencies if proficiencies is not None else {}
         self.saving_throws = saving_throws if saving_throws is not None else []
-        self.spells = spells
+        self.cantrips_known = cantrips_known
+        self.spells_known = spells_known
         self.spells_prepared = spells_prepared
         self.spell_slots = spell_slots
         self.skills_charisma = skills_charisma
@@ -155,14 +162,18 @@ class Character:
         )
 
     def keys(self):
-        return [key for key in self.__dict__ if not key.startswith("_")]
+        keys = [key for key in self.__dict__ if not key.startswith("_")]
+        keys.append("experience")
+        return keys
 
     def values(self):
-        return [
-            value if key not in ("uid", "experience") else str(value)
+        vals = [
+            value if key != "uid" else str(value)
             for key, value in self.__dict__.items()
             if not key.startswith("_")
         ]
+        vals.append(self._experience._experience)
+        return vals
 
     def __getitem__(self, key):
         return dict(zip(self.keys(), self.values()))[key]
@@ -213,14 +224,27 @@ class Character:
             return False
 
     def applyClassLevel(self):
-        if self.level <= len(self.class_levels):
-            data = self.class_levels[self.level - 1]
+        if self.level > 20:
+            return
+        for data in self.class_levels:
+            if data["level"] > self.level:
+                break
             self.ability_score_bonus = data.get(
                 "ability_score_bonuses", self.ability_score_bonus
             )
             self.prof_bonus = data.get("prof_bonus", self.prof_bonus)
             for feat in data["features"]:
                 self.class_features[feat["index"]] = SRD(feat["url"])
+            self.class_spellcasting = data.get("spellcasting", self.class_spellcasting)
+
+    @property
+    def level(self):
+        return self._level
+
+    @level.setter
+    def level(self, new_level):
+        self._level = new_level
+        self.applyClassLevel()
 
     # Inventory and Inventory management (Primitive)
     def getInventorySize(self):
