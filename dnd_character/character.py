@@ -219,6 +219,10 @@ class Character:
                     self.giveItem(SRD(item["equipment"]["url"]))
 
             self.class_levels = SRD(new_class["class_levels"])
+            self.spellcasting_stat = SRD(new_class["spellcasting"])[
+                "spellcasting_ability"
+            ]["index"]
+
             self.applyClassLevel()
 
             return False
