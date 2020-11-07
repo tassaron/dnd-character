@@ -30,6 +30,7 @@ class Character:
         biography: str = None,
         classs: dict = None,
         class_name: str = None,
+        class_index: str = None,
         class_levels: list = None,
         level: int = 1,
         experience: int = 0,
@@ -97,6 +98,7 @@ class Character:
 
         self.wealth = wealth
         self.class_name = class_name
+        self.class_index = class_index
         self.class_levels = class_levels if class_levels is not None else []
         self.prof_bonus = prof_bonus
         self.ability_score_bonus = ability_score_bonus
@@ -245,6 +247,7 @@ class Character:
         self.__class = new_class
         if new_class is not None:
             self.class_name = new_class["name"]
+            self.class_index = new_class["index"]
             self.hd = new_class["hit_die"]
 
             # create dict such as { "all-armor": {"name": "All armor", "type": "Armor"} }
