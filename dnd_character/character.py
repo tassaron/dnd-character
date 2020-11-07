@@ -59,6 +59,8 @@ class Character:
         ability_score_bonus: int = 0,
         class_features: dict = None,
         class_spellcasting: dict = None,
+        class_features_enabled: list = None,
+        spellcasting_stat: str = None,
     ):
         """
         Typical Arguments:
@@ -99,6 +101,9 @@ class Character:
         self.prof_bonus = prof_bonus
         self.ability_score_bonus = ability_score_bonus
         self.class_features = class_features if class_features is not None else {}
+        self.class_features_enabled = (
+            class_features_enabled if class_features_enabled is not None else []
+        )
         self.class_spellcasting = (
             class_spellcasting if class_spellcasting is not None else {}
         )
@@ -133,11 +138,51 @@ class Character:
         self.spells_known = spells_known
         self.spells_prepared = spells_prepared
         self.spell_slots = spell_slots
-        self.skills_charisma = skills_charisma
-        self.skills_wisdom = skills_wisdom
-        self.skills_dexterity = skills_dexterity
-        self.skills_intelligence = skills_intelligence
-        self.skills_strength = skills_strength
+        self.spellcasting_stat = spellcasting_stat
+
+        if skills_charisma is None:
+            self.skills_charisma = {
+                "deception": 0,
+                "intimidation": 0,
+                "performance": 0,
+                "persuasion": 0,
+            }
+        else:
+            self.skills_charisma = skills_charisma
+        if skills_wisdom is None:
+            self.skills_wisdom = {
+                "animal-handling": 0,
+                "insight": 0,
+                "medicine": 0,
+                "perception": 0,
+                "survival": 0,
+            }
+        else:
+            self.skills_wisdom = skills_wisdom
+        if skills_dexterity is None:
+            self.skills_dexterity = {
+                "acrobatics": 0,
+                "sleight-of-hand": 0,
+                "stealth": 0,
+            }
+        else:
+            self.skills_dexterity = skills_dexterity
+        if skills_intelligence is None:
+            self.skills_intelligence = {
+                "arcana": 0,
+                "history": 0,
+                "investigation": 0,
+                "nature": 0,
+                "religion": 0,
+            }
+        else:
+            self.skills_intelligence = skills_intelligence
+        if skills_strength is None:
+            self.skills_strength = {
+                "athletics": 0,
+            }
+        else:
+            self.skills_strength = skills_strength
 
         # Inventory (currently primitive)
         self.inventory = inventory if inventory is not None else []
@@ -242,6 +287,8 @@ class Character:
             self.prof_bonus = data.get("prof_bonus", self.prof_bonus)
             for feat in data["features"]:
                 self.class_features[feat["index"]] = SRD(feat["url"])
+            while len(self.class_features_enabled) < len(self.class_features):
+                self.class_features_enabled.append(True)
             self.class_spellcasting = data.get("spellcasting", self.class_spellcasting)
 
     @property
