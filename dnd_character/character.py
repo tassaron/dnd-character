@@ -62,6 +62,7 @@ class Character:
         class_spellcasting: dict = None,
         class_features_enabled: list = None,
         spellcasting_stat: str = None,
+        player_options: dict = None,
     ):
         """
         Typical Arguments:
@@ -88,6 +89,9 @@ class Character:
         self.gender = gender
         self.description = description
         self.biography = biography
+        self.player_options = (
+            player_options if player_options is not None else {"starting_equipment": []}
+        )
 
         self.alignment = alignment
         if self.alignment is not None:
@@ -262,9 +266,24 @@ class Character:
                 saving_throw["name"] for saving_throw in new_class["saving_throws"]
             ]
 
-            for item in SRD(new_class["starting_equipment"])["starting_equipment"]:
+            starting_equipment = SRD(new_class["starting_equipment"])
+            for item in starting_equipment["starting_equipment"]:
                 for i in range(item["quantity"]):
                     self.giveItem(SRD(item["equipment"]["url"]))
+
+            self.player_options["starting_equipment"] = []
+            for item_option in starting_equipment["starting_equipment_options"]:
+                options = []
+                for option in item_option["from"]:
+                    if "equipment" in option:
+                        options.append(option["equipment"]["name"])
+                    elif "equipment_option" in option:
+                        options.append(
+                            f'or other {option["equipment_option"]["from"]["equipment_category"]["name"].lower()}'
+                        )
+                self.player_options["starting_equipment"].append(
+                    f"choose {item_option['choose']} from {', '.join(options)}"
+                )
 
             self.class_levels = SRD(new_class["class_levels"])
             if "spellcasting" in new_class:
