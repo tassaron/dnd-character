@@ -1,0 +1,1 @@
+{"index": "camel", "name": "Camel", "equipment_category": {"index": "mounts-and-vehicles", "name": "Mounts and Vehicles", "url": "/api/equipment-categories/mounts-and-vehicles"}, "vehicle_category": "Mounts and Other Animals", "cost": {"quantity": 50, "unit": "gp"}, "speed": {"quantity": 50, "unit": "ft/round"}, "capacity": "480 lb.", "url": "/api/equipment/camel"}

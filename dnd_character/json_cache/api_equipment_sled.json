@@ -1,0 +1,1 @@
+{"index": "sled", "name": "Sled", "equipment_category": {"index": "mounts-and-vehicles", "name": "Mounts and Vehicles", "url": "/api/equipment-categories/mounts-and-vehicles"}, "vehicle_category": "Tack, Harness, and Drawn Vehicles", "cost": {"quantity": 20, "unit": "gp"}, "weight": 300, "url": "/api/equipment/sled"}

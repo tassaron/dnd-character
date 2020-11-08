@@ -1,0 +1,1 @@
+{"index": "warship", "name": "Warship", "equipment_category": {"index": "mounts-and-vehicles", "name": "Mounts and Vehicles", "url": "/api/equipment-categories/mounts-and-vehicles"}, "vehicle_category": "Waterborne Vehicles", "cost": {"quantity": 25000, "unit": "gp"}, "speed": {"quantity": 2.5, "unit": "mph"}, "url": "/api/equipment/warship"}

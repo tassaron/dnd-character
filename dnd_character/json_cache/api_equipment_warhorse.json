@@ -1,0 +1,1 @@
+{"index": "warhorse", "name": "Warhorse", "equipment_category": {"index": "mounts-and-vehicles", "name": "Mounts and Vehicles", "url": "/api/equipment-categories/mounts-and-vehicles"}, "vehicle_category": "Mounts and Other Animals", "cost": {"quantity": 400, "unit": "gp"}, "speed": {"quantity": 60, "unit": "ft/round"}, "capacity": "540 lb.", "url": "/api/equipment/warhorse"}

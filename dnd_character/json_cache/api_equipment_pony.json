@@ -1,0 +1,1 @@
+{"index": "pony", "name": "Pony", "equipment_category": {"index": "mounts-and-vehicles", "name": "Mounts and Vehicles", "url": "/api/equipment-categories/mounts-and-vehicles"}, "vehicle_category": "Mounts and Other Animals", "cost": {"quantity": 30, "unit": "gp"}, "speed": {"quantity": 40, "unit": "ft/round"}, "capacity": "225 lb.", "url": "/api/equipment/pony"}

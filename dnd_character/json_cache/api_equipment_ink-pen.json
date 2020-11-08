@@ -1,0 +1,1 @@
+{"index": "ink-pen", "name": "Ink pen", "equipment_category": {"index": "adventuring-gear", "name": "Adventuring Gear", "url": "/api/equipment-categories/adventuring-gear"}, "gear_category": {"index": "standard-gear", "name": "Standard Gear", "url": "/api/equipment-categories/standard-gear"}, "cost": {"quantity": 2, "unit": "cp"}, "weight": 0, "url": "/api/equipment/ink-pen"}
