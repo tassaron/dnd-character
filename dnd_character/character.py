@@ -55,7 +55,6 @@ class Character:
         skills_intelligence: dict = None,
         skills_charisma: dict = None,
         inventory: list = None,
-        invsize: int = None,
         prof_bonus: int = 0,
         ability_score_bonus: int = 0,
         class_features: dict = None,
@@ -190,9 +189,7 @@ class Character:
         else:
             self.skills_strength = skills_strength
 
-        # Inventory (currently primitive)
         self.inventory = inventory if inventory is not None else []
-        self.invsize = len(self.inventory)
 
         self.classs = classs
 
@@ -274,13 +271,20 @@ class Character:
             self.player_options["starting_equipment"] = []
             for item_option in starting_equipment["starting_equipment_options"]:
                 options = []
-                for option in item_option["from"]:
-                    if "equipment" in option:
-                        options.append(option["equipment"]["name"])
-                    elif "equipment_option" in option:
-                        options.append(
-                            f'or other {option["equipment_option"]["from"]["equipment_category"]["name"].lower()}'
-                        )
+                if hasattr(item_option["from"], "get"):
+                    options.append(
+                        item_option["from"][list(item_option["from"].keys())[0]]["name"]
+                    )
+                else:
+                    for option in item_option["from"]:
+                        if "equipment_category" in option:
+                            options.append(option["equipment_category"]["name"])
+                        elif "equipment_option" in option:
+                            options.append(
+                                f'{"%s " % option["equipment_option"]["choose"] if option["equipment_option"]["choose"] != 1 else ""}{option["equipment_option"]["from"]["equipment_category"]["name"]}'
+                            )
+                        elif "equipment" in option:
+                            options.append(option["equipment"]["name"])
                 self.player_options["starting_equipment"].append(
                     f"choose {item_option['choose']} from {', '.join(options)}"
                 )
@@ -322,21 +326,11 @@ class Character:
         self._level = new_level
         self.applyClassLevel()
 
-    # Inventory and Inventory management (Primitive)
-    def getInventorySize(self):
-        self.invsize = len(self.inventory)
-        return self.invsize
-
-    def updateInventory(self):
-        self.invsize = len(self.inventory)
-
     def giveItem(self, item):
         self.inventory.append(item)
-        self.updateInventory()
 
     def removeItem(self, item):
         self.inventory.remove(item)
-        self.updateInventory()
 
     def giveWealth(self, amount):
         """
