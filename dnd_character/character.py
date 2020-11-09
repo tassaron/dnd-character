@@ -147,44 +147,44 @@ class Character:
 
         if skills_charisma is None:
             self.skills_charisma = {
-                "deception": 0,
-                "intimidation": 0,
-                "performance": 0,
-                "persuasion": 0,
+                "deception": False,
+                "intimidation": False,
+                "performance": False,
+                "persuasion": False,
             }
         else:
             self.skills_charisma = skills_charisma
         if skills_wisdom is None:
             self.skills_wisdom = {
-                "animal-handling": 0,
-                "insight": 0,
-                "medicine": 0,
-                "perception": 0,
-                "survival": 0,
+                "animal-handling": False,
+                "insight": False,
+                "medicine": False,
+                "perception": False,
+                "survival": False,
             }
         else:
             self.skills_wisdom = skills_wisdom
         if skills_dexterity is None:
             self.skills_dexterity = {
-                "acrobatics": 0,
-                "sleight-of-hand": 0,
-                "stealth": 0,
+                "acrobatics": False,
+                "sleight-of-hand": False,
+                "stealth": False,
             }
         else:
             self.skills_dexterity = skills_dexterity
         if skills_intelligence is None:
             self.skills_intelligence = {
-                "arcana": 0,
-                "history": 0,
-                "investigation": 0,
-                "nature": 0,
-                "religion": 0,
+                "arcana": False,
+                "history": False,
+                "investigation": False,
+                "nature": False,
+                "religion": False,
             }
         else:
             self.skills_intelligence = skills_intelligence
         if skills_strength is None:
             self.skills_strength = {
-                "athletics": 0,
+                "athletics": False,
             }
         else:
             self.skills_strength = skills_strength
