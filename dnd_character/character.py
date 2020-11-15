@@ -281,7 +281,7 @@ class Character:
                             options.append(option["equipment_category"]["name"])
                         elif "equipment_option" in option:
                             options.append(
-                                f'{"%s " % option["equipment_option"]["choose"] if option["equipment_option"]["choose"] != 1 else ""}{option["equipment_option"]["from"]["equipment_category"]["name"]}'
+                                f'{"%s " % option["equipment_option"]["choose"] if option["equipment_option"]["choose"] != 1 else ""}{option["equipment_option"]["from"]["name"] if "equipment_category" not in option["equipment_option"]["from"] else option["equipment_option"]["from"]["equipment_category"]["name"]}'
                             )
                         elif "equipment" in option:
                             options.append(option["equipment"]["name"])
