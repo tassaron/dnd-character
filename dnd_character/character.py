@@ -143,16 +143,6 @@ class Character:
                 )
                 self._level = level
 
-        # base armour class is 10 + DEX; will be affected by inventory
-        self.armour_class = (
-            armour_class
-            if armour_class is not None
-            else 10 + Character.getModifier(self.dexterity)
-        )
-        self._dead = dead
-        self._death_saves = death_saves
-        self._death_fails = death_fails
-
         # Spells, Skills, Proficiencies
         self.proficiencies = proficiencies if proficiencies is not None else {}
         self.saving_throws = saving_throws if saving_throws is not None else []
@@ -206,9 +196,21 @@ class Character:
         else:
             self.skills_strength = skills_strength
 
-        self.inventory = inventory if inventory is not None else []
+        self.inventory = []
+        if inventory is not None:
+            for item in inventory:
+                self.giveItem(item)
 
         self.classs = classs
+
+        # base armour class is 10 + DEX; will be affected by inventory
+        if armour_class is not None:
+            self.armour_class = armour_class
+        elif not hasattr(self, "armour_class"):
+            self.armour_class = 10 + Character.getModifier(self.dexterity)
+        self._dead = dead
+        self._death_saves = death_saves
+        self._death_fails = death_fails
 
     def __str__(self):
         return (
@@ -441,7 +443,15 @@ class Character:
         if item["equipment_category"]["index"] == "armor":
             if item["armor_category"] == "Shield":
                 self.removeShields()
-                self.armour_class += item["armor_class"]["base"]
+                try:
+                    self.armour_class += item["armor_class"]["base"]
+                except AttributeError:
+                    # shield during __init__ without armour
+                    self.armour_class = (
+                        10
+                        + item["armor_class"]["base"]
+                        + Character.getModifier(self.dexterity)
+                    )
             else:
                 self.removeArmour()
                 self.armour_class = item["armor_class"]["base"] + (
