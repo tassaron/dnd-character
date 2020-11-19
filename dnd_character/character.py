@@ -437,10 +437,10 @@ class Character:
                 self.armour_class += item["armor_class"]["base"]
             else:
                 self.removeArmour()
-                self.armour_class = (
-                    item["armor_class"]["base"] + Character.getModifier(self.dexterity)
-                    if item["armor_class"]["dex_bonus"]
-                    else 0
+                self.armour_class = item["armor_class"]["base"] + (
+                    0
+                    if not item["armor_class"]["dex_bonus"]
+                    else Character.getModifier(self.dexterity)
                 )
         self.inventory.append(item)
 
