@@ -228,7 +228,9 @@ class Character:
 
     def keys(self):
         keys = [key for key in self.__dict__ if not key.startswith("_")]
-        keys.append("experience")
+        keys.extend(
+            ["experience", "death_saves", "death_fails", "dexterity", "dead", "hp"]
+        )
         return keys
 
     def values(self):
@@ -237,7 +239,16 @@ class Character:
             for key, value in self.__dict__.items()
             if not key.startswith("_")
         ]
-        vals.append(self._experience._experience)
+        vals.extend(
+            [
+                self._experience._experience,
+                self._death_saves,
+                self._death_fails,
+                self._dexterity,
+                self._dead,
+                self._hp,
+            ]
+        )
         return vals
 
     def __getitem__(self, key):

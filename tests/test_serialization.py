@@ -1,5 +1,6 @@
 from dnd_character import Character
 from dnd_character.SRD import SRD_classes
+from ast import literal_eval
 
 
 def test_keys_values():
@@ -52,3 +53,32 @@ def test_save_and_load_leveled_up_character():
         player.experience += 1
     clone = Character(**dict(player))
     assert dict(player) == dict(clone)
+
+
+def test_literal_eval_constructs_valid_dict():
+    char = Character(experience=200)
+    str_keys = str(char.keys())
+    str_vals = str(char.values())
+    assert dict(zip(literal_eval(str_keys), literal_eval(str_vals))) == dict(char)
+
+
+def test_property_decorated_methods_serialize():
+    player = Character(experience=200, dexterity=15)
+    clone = Character(**dict(player))
+    assert dict(player) == dict(clone)
+
+
+def test_rolled_stats_serialize():
+    player = Character(experience=200)
+    serialized_char = Character(**dict(zip(player.keys(), player.values())))
+    assert serialized_char.dexterity == player.dexterity
+
+
+def test_rolled_stats_serialize_after_literal_eval():
+    player = Character(experience=200)
+    str_keys = str(player.keys())
+    str_vals = str(player.values())
+    assert (
+        Character(**dict(zip(literal_eval(str_keys), literal_eval(str_vals)))).dexterity
+        == player.dexterity
+    )
