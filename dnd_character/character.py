@@ -5,7 +5,7 @@ import logging
 
 from .roll import RollStats
 from .SRD import SRD
-from .experience import Experience, experience_at_level
+from .experience import Experience, experience_at_level, level_at_experience
 
 
 LOG = logging.getLogger(__package__)
@@ -211,6 +211,10 @@ class Character:
         self._dead = dead
         self._death_saves = death_saves
         self._death_fails = death_fails
+        if self.level == level_at_experience(self._experience._experience):
+            self.level = self._level
+            if hp is None:
+                self.hp = Character.maximum_hp(self.hd, self.level, self.constitution)
 
     def __str__(self):
         return (

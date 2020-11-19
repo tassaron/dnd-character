@@ -35,7 +35,7 @@ def test_save_and_load_lvl3_bard():
 
 
 def test_save_and_load_custom_lvl_character():
-    player = Character(level=3, experience=100)
+    player = Character(level=3, experience=100, constitution=10)
     clone = Character(**dict(player))
     assert dict(player) == dict(clone)
 
@@ -82,3 +82,9 @@ def test_rolled_stats_serialize_after_literal_eval():
         Character(**dict(zip(literal_eval(str_keys), literal_eval(str_vals)))).dexterity
         == player.dexterity
     )
+
+
+def test_save_and_load_hitpoints():
+    player = Character()
+    player.hp = 6
+    assert dict(Character(**dict(player))) == dict(player)

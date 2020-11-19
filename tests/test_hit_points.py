@@ -1,4 +1,9 @@
-from dnd_character import Character
+from dnd_character.character import Character
+from dnd_character.classes import Barbarian
+
+
+def test_maximum_hp_function():
+    assert Character.maximum_hp(12, 11, 10) == 82
 
 
 def test_level_one_max_hp():
@@ -11,3 +16,15 @@ def test_level_one_max_hp():
 def test_level_ten_max_hp():
     t = Character(level=11, constitution=10)
     assert t.max_hp == 58
+
+
+def test_level_one_barbarian_max_hp():
+    t = Barbarian(constitution=10)
+    assert t.max_hp == 12
+    t.hp -= 1
+    assert t.hp == t.max_hp - 1
+
+
+def test_level_ten_barbarian_max_hp():
+    t = Barbarian(level=11, constitution=10)
+    assert t.max_hp == 82
