@@ -313,7 +313,8 @@ class Character:
     @dexterity.setter
     def dexterity(self, new_value):
         self._dexterity = new_value
-        self.armour_class = 10 + Character.getModifier(new_value)
+        for item in self.inventory:
+            self.applyArmourClass(item)
 
     @property
     def experience(self):
@@ -436,12 +437,7 @@ class Character:
             ):
                 self.inventory.pop(i)
 
-    def giveItem(self, item: dict):
-        """
-        Adds an item to the Character's inventory list, as a dictionary.
-        If the item is armour or a shield, the armour_class attribute will be set
-        and any other armour/shields in the inventory will be removed.
-        """
+    def applyArmourClass(self, item: dict):
         if item["equipment_category"]["index"] == "armor":
             if item["armor_category"] == "Shield":
                 self.removeShields()
@@ -453,6 +449,15 @@ class Character:
                     if not item["armor_class"]["dex_bonus"]
                     else Character.getModifier(self.dexterity)
                 )
+
+    def giveItem(self, item: dict):
+        """
+        Adds an item to the Character's inventory list, as a dictionary.
+        If the item is armour or a shield, the armour_class attribute will be set
+        and any other armour/shields in the inventory will be removed.
+        """
+        self.applyArmourClass(item)
+
         self.inventory.append(item)
 
     def removeItem(self, item):

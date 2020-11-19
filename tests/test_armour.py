@@ -15,3 +15,15 @@ def test_light_armour_class():
 def test_heavy_armour_class():
     t = Paladin(dexterity=14)
     assert t.armour_class == 16
+
+
+def test_heavy_armour_class_ignores_dexterity_change():
+    t = Paladin(dexterity=14)
+    t.dexterity = 16
+    assert t.armour_class == 16
+
+
+def test_light_armour_still_applies_after_dexterity_change():
+    t = Bard(dexterity=14)
+    t.dexterity = 16
+    assert t.armour_class == 14
