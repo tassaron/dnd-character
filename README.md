@@ -13,6 +13,25 @@ SRD rules are fetched from the [5e SRD API](https://github.com/bagelbits/5e-srd-
 The software is EPL-2.0 and the text for this license is in `LICENSE` as is standard for software. Originally forked from [PyDnD](https://github.com/Coffee-fueled-deadlines/PyDnD). The contents of `dnd_character/json_cache` are retrieved from [5e-srd-api](https://github.com/bagelbits/5e-srd-api/issues/114), and are covered by the Open Game License. See `dnd_character/json_cache/OGLv1.0a.txt` for details.
 
 
+## Getting Started
+```
+from dnd_character.classes import Bard
+from dnd_character.monsters import SRD_monsters
+from random import randint
+
+brianna = Bard(
+    name="Brianna",
+    level=10,
+    )
+zombie = SRD_monsters["zombie"]
+attack_bonus = zombie["actions"][0]["attack_bonus"]
+if randint(1, 20) + attack_bonus > brianna.armour_class:
+    print(f"{brianna.name} was hit by {zombie['name']}!")
+else:
+    print(f"{brianna.name} bravely dodged the attack")
+```
+
+
 ## Character Object
 Normal initialization arguments for a Character object:
 ```
