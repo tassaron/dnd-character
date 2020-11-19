@@ -41,8 +41,9 @@ class Character:
         wisdom: int = None,
         intelligence: int = None,
         charisma: int = None,
+        max_hp: int = None,
         hp: int = None,
-        hd: str = None,
+        hd: int = None,
         proficiencies: dict = None,
         saving_throws: list = None,
         cantrips_known: dict = None,
@@ -62,6 +63,10 @@ class Character:
         class_features_enabled: list = None,
         spellcasting_stat: str = None,
         player_options: dict = None,
+        armour_class: int = None,
+        death_saves: int = 0,
+        death_fails: int = 0,
+        dead: bool = False,
     ):
         """
         Typical Arguments:
@@ -112,6 +117,18 @@ class Character:
         self.class_spellcasting = (
             class_spellcasting if class_spellcasting is not None else {}
         )
+
+        # Ability Scores
+        self.strength = self.setInitialAbilityScore(strength)
+        self._dexterity = self.setInitialAbilityScore(dexterity)
+        self.constitution = self.setInitialAbilityScore(constitution)
+        self.wisdom = self.setInitialAbilityScore(wisdom)
+        self.intelligence = self.setInitialAbilityScore(intelligence)
+        self.charisma = self.setInitialAbilityScore(charisma)
+        # Hit Dice and Hit Points: self.hd == 8 is a d8, 10 is a d10, etc
+        self.hd = hd if hd is not None else 8
+        self.max_hp = max_hp if max_hp is not None else int(self.hd)
+        self._hp = hp if hp is not None else int(self.max_hp)
         self._level = 1
         self._experience = Experience(character=self, experience=experience)
         if level != self._level:
@@ -126,17 +143,17 @@ class Character:
                 )
                 self._level = level
 
-        # Ability Scores
-        self.strength = self.setInitialAbilityScore(strength)
-        self.dexterity = self.setInitialAbilityScore(dexterity)
-        self.constitution = self.setInitialAbilityScore(constitution)
-        self.wisdom = self.setInitialAbilityScore(wisdom)
-        self.intelligence = self.setInitialAbilityScore(intelligence)
-        self.charisma = self.setInitialAbilityScore(charisma)
+        # base armour class is 10 + DEX; will be affected by inventory
+        self.armour_class = (
+            armour_class
+            if armour_class is not None
+            else 10 + Character.getModifier(self.dexterity)
+        )
+        self._dead = dead
+        self._death_saves = death_saves
+        self._death_fails = death_fails
 
         # Spells, Skills, Proficiencies
-        self.hp = hp
-        self.hd = hd
         self.proficiencies = proficiencies if proficiencies is not None else {}
         self.saving_throws = saving_throws if saving_throws is not None else []
         self.cantrips_known = cantrips_known
@@ -225,6 +242,67 @@ class Character:
 
     def __getitem__(self, key):
         return dict(zip(self.keys(), self.values()))[key]
+
+    @property
+    def dead(self):
+        return self._dead
+
+    @dead.setter
+    def dead(self, new_value: bool):
+        self._dead = new_value
+        self._death_saves = 0
+        self._death_fails = 0
+
+    @property
+    def death_saves(self):
+        return self._death_saves
+
+    @death_saves.setter
+    def death_saves(self, new_value: int):
+        if not 4 > new_value > -1:
+            raise ValueError("Death saving throws must be in range 0-3")
+        elif new_value == 3:
+            self._death_saves = 0
+            self._death_fails = 0
+            self._dead = False
+        else:
+            self._death_saves = new_value
+
+    @property
+    def death_fails(self):
+        return self._death_fails
+
+    @death_fails.setter
+    def death_fails(self, new_value: int):
+        if not 4 > new_value > -1:
+            raise ValueError("Death saving throws must be in range 0-3")
+        elif new_value == 3:
+            self._death_saves = 0
+            self._death_fails = 0
+            self._dead = True
+        else:
+            self._death_fails = new_value
+
+    @property
+    def hp(self):
+        return self._hp
+
+    @hp.setter
+    def hp(self, new_value: int):
+        if new_value < 0:
+            new_value = 0
+        elif new_value > self.max_hp:
+            new_value = int(self.max_hp)
+        self._hp = new_value
+
+    @property
+    def dexterity(self):
+        return self._dexterity
+
+    @dexterity.setter
+    def dexterity(self, new_value):
+        self._dexterity = new_value
+        self.armour_class = 10 + Character.getModifier(new_value)
 
     @property
     def experience(self):
@@ -324,12 +402,54 @@ class Character:
     @level.setter
     def level(self, new_level):
         self._level = new_level
+        if self.hp == self.max_hp:
+            self.hp = Character.maximum_hp(self.hd, new_level, self.constitution)
+        self.max_hp = Character.maximum_hp(self.hd, new_level, self.constitution)
         self.applyClassLevel()
 
-    def giveItem(self, item):
+    def removeShields(self):
+        """Removes all shields from self.inventory. Used by self.giveItem when equipping shield"""
+        for i, item in enumerate(self.inventory):
+            if (
+                item["equipment_category"]["index"] == "armor"
+                and item["armor_category"] == "Shield"
+            ):
+                self.inventory.pop(i)
+
+    def removeArmour(self):
+        """Removes all armour from self.inventory. Used by self.giveItem when equipping armour"""
+        for i, item in enumerate(self.inventory):
+            if (
+                item["equipment_category"]["index"] == "armor"
+                and item["armor_category"] != "Shield"
+            ):
+                self.inventory.pop(i)
+
+    def giveItem(self, item: dict):
+        """
+        Adds an item to the Character's inventory list, as a dictionary.
+        If the item is armour or a shield, the armour_class attribute will be set
+        and any other armour/shields in the inventory will be removed.
+        """
+        if item["equipment_category"]["index"] == "armor":
+            if item["armor_category"] == "Shield":
+                self.removeShields()
+                self.armour_class += item["armor_class"]["base"]
+            else:
+                self.removeArmour()
+                self.armour_class = (
+                    item["armor_class"]["base"] + Character.getModifier(self.dexterity)
+                    if item["armor_class"]["dex_bonus"]
+                    else 0
+                )
         self.inventory.append(item)
 
     def removeItem(self, item):
+        if item["equipment_category"]["index"] == "armor":
+            if item["armor_category"] == "Shield":
+                self.armour_class -= item["armor_class"]["base"]
+            else:
+                self.armour_class = 10 + Character.getModifier(self.dexterity)
         self.inventory.remove(item)
 
     def giveWealth(self, amount):
@@ -404,16 +524,20 @@ class Character:
             return int(stat)
 
     @classmethod
-    def getModifier(self, stat):
+    def getModifier(cls, number):
         """
         This method returns the modifier for the given stat
 
         Args:
-                stat (int): The player ability score to calculate the modifier for
+                number (int): The player ability score to calculate the modifier for
 
         Returns:
                 modifier  (int): The modifier for the given stat
-                None (NoneType): Returns none if the ability score queried doesn't exist
         """
-        modifier = math.floor(stat / 2) - 5
-        return modifier
+        return math.floor((number - 10) / 2)
+
+    @classmethod
+    def maximum_hp(cls, hd, level, constitution):
+        return (
+            hd + ((int(hd / 2) + 1) * (level - 1)) + Character.getModifier(constitution)
+        )
