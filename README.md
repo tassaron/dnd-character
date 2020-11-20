@@ -13,7 +13,10 @@ SRD rules are fetched from the [5e SRD API](https://github.com/bagelbits/5e-srd-
 The software is EPL-2.0 and the text for this license is in `LICENSE` as is standard for software. Originally forked from [PyDnD](https://github.com/Coffee-fueled-deadlines/PyDnD). The contents of `dnd_character/json_cache` are retrieved from [5e-srd-api](https://github.com/bagelbits/5e-srd-api/issues/114), and are covered by the Open Game License. See `dnd_character/json_cache/OGLv1.0a.txt` for details.
 
 
-## Getting Started
+## Example Code
+
+### Creating Characters and Monsters
+The `classes` module has functions for creating all 12 classes from the System Reference Document. The `monsters` module has a dictionary of monsters, which are dictionaries themselves.
 ```
 from dnd_character.classes import Bard
 from dnd_character.monsters import SRD_monsters
@@ -25,10 +28,58 @@ brianna = Bard(
     )
 zombie = SRD_monsters["zombie"]
 attack_bonus = zombie["actions"][0]["attack_bonus"]
-if randint(1, 20) + attack_bonus > brianna.armour_class:
+# Zombie rolls a d20 to attack a Bard
+if randint(1, 20) + attack_bonus => brianna.armour_class:
     print(f"{brianna.name} was hit by {zombie['name']}!")
 else:
     print(f"{brianna.name} bravely dodged the attack")
+```
+
+### Leveling and Experience
+The library should help leveling up characters automatically if you manage the Character's `experience` attribute. It's simpler to avoid modifying the level directly.
+```
+import dnd_character
+thor = Character(name="Thor")
+assert thor.level == 1
+thor.experience += 1000
+assert thor.level == 3
+assert thor.experience.to_next_level == 1700
+thor.experience += thor.experience.to_next_level
+assert thor.level == 4
+```
+
+### Starting Equipment
+Characters initialized with a class will have the starting equipment of that class, and an attribute called `player_options` which lists the optional starting equipment.
+```
+from dnd_character.classes import Paladin
+from pprint import pprint
+sturm = Paladin(dexterity=10)
+pprint(sturm.inventory)
+print(sturm.armour_class)
+# Remove Chain Mail
+sturm.removeItem(sturm.inventory[0])
+print(sturm.armour_class)
+# New Item
+from dnd_character.equipment import SRD_equipment
+dragonlance = SRD_equipment['lance']
+dragonlance["name"] = "Dragonlance®"
+sturm.giveItem(dragonlance)
+# View optional starting equipment
+pprint(sturm.player_options)
+```
+
+
+### Using Spells
+Support for spells is not super great at the moment. Characters have dictionaries like `spells_known` and `cantrips_known` in which you're expected to store dictionaries from `SRD_spells`... but there's no useful help from the library here. Yet!
+```
+from dnd_character.spellcasting import SRD_spells, spells_for_class_level
+from pprint import pprint
+cantrips = spells_for_class_level('wizard', 0)
+print(f"Cantrips available to a Wizard: {', '.join(cantrips)}")
+for spell in cantrips:
+    print(f"{SRD_spells[spell]['name']}:")
+    pprint(SRD_spells[spell])
+    break
 ```
 
 
@@ -55,18 +106,5 @@ classs      (dict): JSON returned from the 5e API -- dnd_character.SRD.SRD_class
 In addition, the Character object can receive attributes that are normally set automatically, such as the UUID. This is for re-loading the objects from serialized data (via `Character(**characterData)`) and probably aren't arguments you would write manually into your code.
 
 
-## Leveling and Experience
-The library should help leveling up characters automatically if simply manage the Character's `experience` attribute. It's better to avoid modifying the level directly.
-
-### Example
-```
->>> thor = Character(name="Thor")
->>> thor.experience += 1000
->>> thor.level
-3
->>> thor.experience.to_next_level
-1700
->>> thor.experience += thor.experience.to_next_level
->>> thor.level
-4
-```
+## Contributing
+Please feel free to open a Pull Request on GitHub! I would be happy to help merge any contributions no matter your skill level.
