@@ -28,7 +28,8 @@ class Experience:
         self.character.level = level_at_experience(self._experience)
 
     def __add__(self, new_val):
-        return self._experience + int(new_val)
+        val = self._experience + int(new_val)
+        return val if val >= 0 else 0
 
     def __sub__(self, new_val):
         val = self._experience - new_val
