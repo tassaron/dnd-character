@@ -74,7 +74,7 @@ class Experience:
             return 0
 
 
-@lru_cache
+@lru_cache(maxsize=None)
 def level_at_experience(num):
     for level, threshold in enumerate(level_progression):
         if num >= threshold:
