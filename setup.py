@@ -17,7 +17,7 @@ setup(
     packages=find_packages(),
     include_package_data=True,
     version=__version__,
-    url="https://github.com/tassaron2/dnd-character",
+    url="https://github.com/tassaron/dnd-character",
     license="EPL-2.0",
     description="make Dungeons & Dragons characters as serializable objects",
     long_description=long_description,
@@ -28,7 +28,7 @@ setup(
         "Intended Audience :: Developers",
         "Topic :: Games/Entertainment",
         "Topic :: Games/Entertainment :: Role-Playing",
-        "Programming Language :: Python :: 3.6",
+        "Programming Language :: Python :: 3.8",
         "License :: OSI Approved :: Eclipse Public License 2.0 (EPL-2.0)",
     ],
     # requests is needed in development to update the json_cache
