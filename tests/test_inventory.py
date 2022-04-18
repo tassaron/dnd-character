@@ -6,10 +6,8 @@ def test_remove_shields():
     t = Character()
     t.giveItem(SRD_equipment["shield"])
     t.removeShields()
-    for item in t.inventory:
-        if item["equipment_category"]["index"] == "armor":
-            # only non-shields should exist in the armour category
-            assert item["armor_category"] != "Shield"
+    # only non-shields should exist in the armour category
+    assert not [item for item in t.inventory if item["equipment_category"]["index"] == "armor" and item["armor_category"] == "Shield"]
 
 
 def test_shield_increases_armour_class():
@@ -23,8 +21,6 @@ def test_shield_increases_armour_class():
 
 def test_remove_armour():
     t = Bard(dexterity=10)
+    # Bard starts with armour which should be removed by this method
     t.removeArmour()
-    for item in t.inventory:
-        if item["equipment_category"]["index"] == "armor":
-            # only shields should remain in the armour category
-            assert item["armor_category"] == "Shield"
+    assert not [item for item in t.inventory if item["equipment_category"]["index"] == "armor" and item["armor_category"] != "Shield"]
