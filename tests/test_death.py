@@ -32,16 +32,25 @@ def test_death_resets_death_saves():
     assert c.death_saves == 0
 
 
-def test_death_saves_range():
+def test_death_saves_upper_range():
     c = Character()
     with pytest.raises(ValueError):
         c.death_saves = 4
+
+def test_death_saves_lower_range():
+    c = Character()
+    with pytest.raises(ValueError):
         c.death_saves = -1
 
 
-def test_death_fails_range():
+def test_death_fails_upper_range():
     c = Character()
     with pytest.raises(ValueError):
         c.death_fails = 4
+
+
+def test_death_fails_lower_range():
+    c = Character()
+    with pytest.raises(ValueError):
         c.death_fails = -1
 
