@@ -1,5 +1,5 @@
 from dnd_character import Character
-from dnd_character.experience import experience_at_level
+from dnd_character.experience import experience_at_level, Experience
 
 
 def twenty_levels_of_character():
@@ -78,3 +78,16 @@ def test_no_negative_experience():
     character = Character(experience=100)
     character.experience -= 101
     assert character.experience == 0
+
+
+def test_experience_setter_none():
+    character = Character(experience=100)
+    character.experience = None
+    assert character.experience == 100
+
+
+def test_experience_setter_object():
+    character = Character(experience=100)
+    experience = Experience(character, 200)
+    character.experience = experience
+    assert character.experience == 200
