@@ -8,7 +8,7 @@ __author__ = "Brianna Rainey"
 __copyright__ = "Copyright 2019-2022 Brianna Rainey & Markis Cook"
 __credits__ = ["Brianna Rainey (Current Programmer)", "Markis Cook (Original Creator)"]
 __license__ = "EPL-2.0"
-__version__ = "22.01.12"
+__version__ = "22.04.18"
 __maintainer__ = "Brianna Rainey"
 
 

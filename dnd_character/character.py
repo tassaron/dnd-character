@@ -1,3 +1,4 @@
+from typing import Optional
 from uuid import uuid4, UUID
 from functools import reduce
 import math
@@ -482,70 +483,28 @@ class Character:
                 self.armour_class = 10 + Character.getModifier(self.dexterity)
         self.inventory.remove(item)
 
-    def giveWealth(self, amount):
+    def giveWealth(self, amount) -> None:
         """
         Give wealth to character
-
-        Args:
-                amount
-
-        Returns:
-                None
         """
         self.wealth += amount
 
-    def removeWealth(self, amount):
+    def removeWealth(self, amount: int) -> bool:
         """
-        Remove wealth from character
-
-        Args:
-                amount
-
-        Returns:
-                None
+        Remove wealth from character if possible. Returns bool to indicate success or failure.
+        If wealth < amount then wealth remains unchanged, otherwise this character loses wealth
         """
         if amount > self.wealth:
-            self.wealth = 0
-        else:
-            self.wealth -= amount
-
-    def chargeWealth(self, amount):
-        """
-        The chargeWealth() method functions similarly to the
-        removeWealth() method. However, instead of setting
-        self.wealth to 0 on the condition of not having enough,
-        chargeWealth() returns False and doesn't change the
-        value of self.wealth. On success, self.removeWealth()
-        is triggered, the amount is removed, and chargeWealth()
-        returns True.
-
-        Args:
-                amount
-
-        Returns:
-                Boolval
-
-        Triggers:
-                self.removeWealth() if self.wealth > amount
-        """
-        if amount > self.wealth:
-            # Not enough for purchase
             return False
         else:
-            self.removeWealth(self, amount)
+            self.wealth -= amount
             return True
 
     @classmethod
-    def setInitialAbilityScore(self, stat):
+    def setInitialAbilityScore(self, stat: Optional[int]) -> int:
         """
         Set ability score to an int. If the argument is None, then this method
         instead rolls for the initial starting ability score.
-
-        Args:
-                stat
-
-        Returns:
-                the new ability score as an int
         """
         if stat == None:
             roll = RollStats()
@@ -554,20 +513,18 @@ class Character:
             return int(stat)
 
     @classmethod
-    def getModifier(cls, number):
+    def getModifier(cls, number: int) -> int:
         """
-        This method returns the modifier for the given stat
-
-        Args:
-                number (int): The player ability score to calculate the modifier for
-
-        Returns:
-                modifier  (int): The modifier for the given stat
+        This method returns the modifier for the given stat (INT, CON, etc.)
+        The formula for this is (STAT - 10 / 2) so e.g. 14 results in 2
         """
         return math.floor((number - 10) / 2)
 
     @classmethod
-    def maximum_hp(cls, hd, level, constitution):
+    def maximum_hp(cls, hd: int, level: int, constitution: int) -> int:
+        """
+        Calculate maximum hitpoints using hit dice (HD), level and constitution modifier
+        """
         return (
-            hd + ((int(hd / 2) + 1) * (level - 1)) + Character.getModifier(constitution)
+            hd + ((int(hd / 2) + 1) * (level - 1)) + cls.getModifier(constitution)
         )
