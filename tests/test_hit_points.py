@@ -28,3 +28,13 @@ def test_level_one_barbarian_max_hp():
 def test_level_ten_barbarian_max_hp():
     t = Barbarian(level=11, constitution=10)
     assert t.max_hp == 82
+
+
+def test_minimum_hp():
+    t = Character(constitution=10)
+    t.hp = 0
+    t.hp -= 1
+    assert t.hp == 0
+    t.hp = -1
+    assert t.hp == 0
+    
