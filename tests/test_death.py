@@ -1,4 +1,3 @@
-from multiprocessing.sharedctypes import Value
 from dnd_character import Character
 import pytest
 
