@@ -10,4 +10,4 @@ def test_alignment_is_2_characters():
 
 def test_alignment_is_uppercase():
     new = Character(alignment="cg")
-    assert new.alignment.upper() == "CG"
+    assert new.alignment == "CG"
