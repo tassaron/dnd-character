@@ -8,5 +8,5 @@ def test_modifier_positive():
     assert Character.getModifier(14) == 2
 
 
-def test_modifier_positive():
+def test_modifier_negative():
     assert Character.getModifier(6) == -2
