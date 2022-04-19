@@ -24,3 +24,17 @@ def test_remove_armour():
     # Bard starts with armour which should be removed by this method
     t.removeArmour()
     assert not [item for item in t.inventory if item["equipment_category"]["index"] == "armor" and item["armor_category"] != "Shield"]
+
+
+def test_removing_shield_does_not_affect_equipped_armour():
+    t = Bard(dexterity=14)
+    t.giveItem(SRD_equipment["shield"])
+    t.removeItem(SRD_equipment["shield"])
+    assert t.armour_class == 13
+
+
+def test_removing_armour_does_not_affect_equipped_shield():
+    t = Bard(dexterity=10)
+    t.giveItem(SRD_equipment["shield"])
+    t.removeItem(SRD_equipment["leather"])
+    assert t.armour_class == 12

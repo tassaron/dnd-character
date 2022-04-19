@@ -480,7 +480,12 @@ class Character:
             if item["armor_category"] == "Shield":
                 self.armour_class -= item["armor_class"]["base"]
             else:
-                self.armour_class = 10 + Character.getModifier(self.dexterity)
+                extra_ac_bonus = 0
+                shield = [item for item in self.inventory if item["equipment_category"]["index"] == "armor" and item["armor_category"] == "Shield"]
+                if shield:
+                    extra_ac_bonus = shield[0]["armor_class"]["base"]
+                self.armour_class = 10 + extra_ac_bonus + Character.getModifier(self.dexterity)
+
         self.inventory.remove(item)
 
     def giveWealth(self, amount) -> None:
