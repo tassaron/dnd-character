@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, Union
 from uuid import uuid4, UUID
 from functools import reduce
 import math
@@ -33,8 +33,8 @@ class Character:
         class_name: str = None,
         class_index: str = None,
         class_levels: list = None,
-        level: int = 1,
-        experience: int = 0,
+        level: Union[int, None] = None,
+        experience: Union[int, None, Experience] = None,
         wealth: int = 0,
         strength: int = None,
         dexterity: int = None,
@@ -88,6 +88,7 @@ class Character:
                 hp           (int):  character's starting hitpoint value
         """
 
+        # Decorative attrs that don't affect program logic
         self.uid = UUID(uid) if uid is not None else uuid4()
         self.name = name
         self.age = age
@@ -97,7 +98,6 @@ class Character:
         self.player_options = (
             player_options if player_options is not None else {"starting_equipment": []}
         )
-
         self.alignment = alignment
         if self.alignment is not None:
             assert (
@@ -105,7 +105,7 @@ class Character:
             ), "Alignments must be 2 letters (i.e LE, LG, TN, NG, CN)"
             self.alignment = self.alignment.upper()
 
-        self.wealth = wealth
+        # DND Class
         self.class_name = class_name
         self.class_index = class_index
         self.class_levels = class_levels if class_levels is not None else []
@@ -126,18 +126,32 @@ class Character:
         self.wisdom = self.setInitialAbilityScore(wisdom)
         self.intelligence = self.setInitialAbilityScore(intelligence)
         self.charisma = self.setInitialAbilityScore(charisma)
+        
         # Hit Dice and Hit Points: self.hd == 8 is a d8, 10 is a d10, etc
         self.hd = hd if hd is not None else 8
         self.max_hp = max_hp if max_hp is not None else int(self.hd)
         self._hp = hp if hp is not None else int(self.max_hp)
-        self._level = 1
-        self._experience = Experience(character=self, experience=experience)
-        if level != self._level:
+
+        # Experience points
+        self._level = 1 
+        # self.level could be altered by Experience object below
+        if experience is None:
+            experience = 0
+        if type(experience) == Experience:
+            self._experience = experience
+        else:
+            self._experience = Experience(character=self, experience=experience)
+        
+        # Levels
+        # self.level could be altered by Experience object above
+        if level is not None:
             if self._experience.experience == 0:
                 # if only level is specified, set the experience to the amount for that level
                 self._experience.experience = experience_at_level(level)
+                # Experience alters self.level so it is now the correct value
             else:
-                # the Experience object normally handles the Character object's level attr
+                # if level is specified AND experience is not zero:
+                # the Experience object normally handles the self.level attr
                 # but if a user changes their level manually, it should override this anyway
                 LOG.info(
                     f"Custom level for {str(self.name)}: {str(level)} instead of {str(self.level)}"
@@ -197,24 +211,31 @@ class Character:
         else:
             self.skills_strength = skills_strength
 
+        # Inventory & Wealth
+        self.wealth = wealth
         self.inventory = []
         if inventory is not None:
             for item in inventory:
                 self.giveItem(item)
 
+        # Final steps of initialization -- the classs.setter does lots of work here
+        # setting the self.classs attr applies "class features" appropriate to character's level
         self.classs = classs
 
         # base armour class is 10 + DEX; will be affected by inventory
         if armour_class is not None:
             self.armour_class = armour_class
         elif not hasattr(self, "armour_class"):
-            self.armour_class = 10 + Character.getModifier(self.dexterity)
+            self.armour_class = self.baseArmourClass
         self._dead = dead
         self._death_saves = death_saves
         self._death_fails = death_fails
+
         if self.level == level_at_experience(self._experience._experience):
             self.level = self._level
             if hp is None:
+                # Set character's HP to the maximum for their level,
+                # only if the level isn't custom! (if it matches experience points according to SRD)
                 self.hp = Character.maximum_hp(self.hd, self.level, self.constitution)
 
     def __str__(self):
@@ -320,6 +341,7 @@ class Character:
     @dexterity.setter
     def dexterity(self, new_value):
         self._dexterity = new_value
+        self.armour_class = self.baseArmourClass
         for item in self.inventory:
             self.applyArmourClass(item)
 
@@ -464,6 +486,10 @@ class Character:
                     if not item["armor_class"]["dex_bonus"]
                     else Character.getModifier(self.dexterity)
                 )
+    
+    @property
+    def baseArmourClass(self):
+        return 10 + Character.getModifier(self.dexterity)
 
     def giveItem(self, item: dict):
         """
@@ -505,8 +531,8 @@ class Character:
             self.wealth -= amount
             return True
 
-    @classmethod
-    def setInitialAbilityScore(self, stat: Optional[int]) -> int:
+    @staticmethod
+    def setInitialAbilityScore(stat: Optional[int]) -> int:
         """
         Set ability score to an int. If the argument is None, then this method
         instead rolls for the initial starting ability score.
@@ -517,8 +543,8 @@ class Character:
         else:
             return int(stat)
 
-    @classmethod
-    def getModifier(cls, number: int) -> int:
+    @staticmethod
+    def getModifier(number: int) -> int:
         """
         This method returns the modifier for the given stat (INT, CON, etc.)
         The formula for this is (STAT - 10 / 2) so e.g. 14 results in 2
