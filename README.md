@@ -3,10 +3,13 @@ A Python library to make 5e Dungeons & Dragons characters for use in another app
 
 SRD rules are fetched from the [5e SRD API](https://github.com/5e-bits/5e-srd-api) the first time they're requested, then the JSON is cached locally for faster retrieval in the future. I've included the `json_cache` containing the SRD inside the repo in case this API changes, but when the API does change I will update this library. So please pin your version if you want to avoid any breaking changes.
 
+You can use this library as a CLI tool to generate character sheets from the terminal; see `python -m dnd_character --help` for details.
+
 
 ## Installation and Use
 1. Install from PyPI using `pip install dnd-character`
 1. See `example.py` for example code on how to use the library.
+1. Generate random character sheet text file with `python -m dnd_character --random > mycharactername.txt`
 
 
 ## Licenses
@@ -29,7 +32,7 @@ brianna = Bard(
 zombie = SRD_monsters["zombie"]
 attack_bonus = zombie["actions"][0]["attack_bonus"]
 # Zombie rolls a d20 to attack a Bard
-if randint(1, 20) + attack_bonus => brianna.armour_class:
+if randint(1, 20) + attack_bonus >= brianna.armour_class:
     print(f"{brianna.name} was hit by {zombie['name']}!")
 else:
     print(f"{brianna.name} bravely dodged the attack")
