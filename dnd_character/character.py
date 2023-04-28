@@ -434,14 +434,12 @@ class Character:
                     add_to_starting_options("choose from {}".format(", ".join(options)))
 
             self.class_levels = SRD_class_levels[self.class_index]
-            LOG.warning("Spellcasting needs revising")
-            # if "spellcasting" in new_class:
-            #     self.spellcasting_stat = SRD(new_class["spellcasting"])[
-            #         "spellcasting_ability"
-            #     ]["index"]
-            # else:
-            #     self.spellcasting_stat = None
-
+            if "spellcasting" in new_class:
+                self.spellcasting_stat = new_class["spellcasting"][
+                     "spellcasting_ability"
+                ]["index"]
+            else:
+                self.spellcasting_stat = None
             self.applyClassLevel()
 
             return False
