@@ -388,32 +388,53 @@ class Character:
                     self.giveItem(SRD(item["equipment"]["url"]))
 
             self.player_options["starting_equipment"] = []
-            LOG.warning("starting  equipment options needs major revision")
-            # for item_option in new_class["starting_equipment_options"]:
-            #     options = []
-            #     if hasattr(item_option["from"], "get"):
-            #         print(item_option["from"][list(item_option["from"].keys())[1]])
-            #         exit()
-            #         options.append(
-            #             item_option["from"][list(item_option["from"].keys())[0]]["name"]
-            #         )
-            #     else:
-            #         for option in item_option["from"]:
-            #             if "equipment_category" in option:
-            #                 options.append(option["equipment_category"]["name"])
-            #             elif "equipment_option" in option:
-            #                 options.append(
-            #                     f'{"%s " % option["equipment_option"]["choose"] if option["equipment_option"]["choose"] != 1 else ""}{option["equipment_option"]["from"]["name"] if "equipment_category" not in option["equipment_option"]["from"] else option["equipment_option"]["from"]["equipment_category"]["name"]}'
-            #                 )
-            #             elif "equipment" in option:
-            #                 options.append(option["equipment"]["name"])
-            #     self.player_options["starting_equipment"].append(
-            #         f"choose {item_option['choose']} from {', '.join(options)}"
-            #     )
 
-            print(new_class["class_levels"])
+            def add_to_starting_options(choice:str):
+                self.player_options["starting_equipment"].append(choice)
+
+            def fetch_choices_string(option):
+                choices = SRD(option["equipment_category"]["url"])["equipment"]
+                choices_names = [c["name"] for c in choices]
+                return "{} (choice from {})".format(
+                    option["equipment_category"]["name"],
+                    ", ".join(choices_names)
+                )
+
+            for item_option in new_class["starting_equipment_options"]:
+                options = []
+                opts = item_option["from"]
+                if not "options" in opts.keys():
+                    choices = fetch_choices_string(opts)
+                    add_to_starting_options(choices)
+                    
+                else:
+                    for opt in opts["options"]:
+                        opt_type = opt["option_type"]
+                        if opt_type == "counted_reference":
+                            options.append("{} x {}".format(
+                                opt["count"], opt["of"]["name"] 
+                            ))
+                        elif opt_type == "choice":
+                            how_many = opt["choice"]["choose"]
+                            choices = fetch_choices_string(opt["choice"]["from"])
+                            options.append("{} x {}".format(
+                                how_many, choices 
+                            ))
+                        elif opt_type == "multiple":
+                            try:
+                                combo = [str(c["count"]) + " " + c["of"]["name"] for c in opt["items"]]
+                                add_to_starting_options("{}".format(', '.join(combo)))
+                            except KeyError:
+                                # shield or martial weapon
+                                martial_weapons = fetch_choices_string(opt["items"][0]["choice"]["from"])
+                                shield = opt["items"][1]["of"]["name"]
+                                add_to_starting_options("choose 1 from {} or a {}".format(martial_weapons, shield))
+                                continue
+
+                    add_to_starting_options("choose from {}".format(", ".join(options)))
+
             self.class_levels = SRD_class_levels[self.class_index]
-            LOG.warning("Spellcating needs revising")
+            LOG.warning("Spellcasting needs revising")
             # if "spellcasting" in new_class:
             #     self.spellcasting_stat = SRD(new_class["spellcasting"])[
             #         "spellcasting_ability"

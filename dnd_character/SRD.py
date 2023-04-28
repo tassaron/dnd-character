@@ -74,13 +74,14 @@ def __SRD_API_CALL():
 
 SRD = __SRD_API_CALL()
 
+def load_equipment():
+    from .equipment import SRD_equipment
+
 SRD_endpoints = SRD("/api/")
-SRD_equipment = {}
 SRD_classes = {}
 SRD_class_levels = {}
 
-for result in SRD(SRD_endpoints["equipment"])["results"]:
-    SRD_equipment[result["index"]] = SRD(result["url"])
+load_equipment()
 
 for result in SRD(SRD_endpoints["classes"])["results"]:
     SRD_classes[result["index"]] = SRD(result["url"])
