@@ -2,7 +2,7 @@
 A cached function that gets SRD data from a DND 5e REST API
 """
 import json
-from os import environ, walk, path, remove
+from os import environ, walk, path, remove, mkdir
 from functools import wraps
 import logging
 
@@ -13,6 +13,9 @@ LOG.setLevel(logging.DEBUG)
 
 try:
     JSON_CACHE = f"{path.dirname(path.abspath(__file__))}/json_cache"
+    if not path.exists(JSON_CACHE):
+        mkdir(JSON_CACHE)
+
 except Exception as e:
     LOG.error(f"Entire JSON cache failed to load: {str(e)}")
 
