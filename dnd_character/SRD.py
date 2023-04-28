@@ -75,9 +75,17 @@ def __SRD_API_CALL():
 SRD = __SRD_API_CALL()
 
 SRD_endpoints = SRD("/api/")
+SRD_equipment = {}
 SRD_classes = {}
+SRD_class_levels = {}
+
+for result in SRD(SRD_endpoints["equipment"])["results"]:
+    SRD_equipment[result["index"]] = SRD(result["url"])
+
 for result in SRD(SRD_endpoints["classes"])["results"]:
     SRD_classes[result["index"]] = SRD(result["url"])
+    SRD_class_levels[result["index"]] = SRD(result["url"] + "/levels")
+
 SRD_rules = {
     category["name"]: {
         subsection["name"]: SRD(subsection["url"])["desc"]

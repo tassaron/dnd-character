@@ -5,7 +5,7 @@ import math
 import logging
 
 from .roll import RollStats
-from .SRD import SRD
+from .SRD import SRD, SRD_class_levels
 from .experience import Experience, experience_at_level, level_at_experience
 
 
@@ -382,39 +382,44 @@ class Character:
                 saving_throw["name"] for saving_throw in new_class["saving_throws"]
             ]
 
-            starting_equipment = SRD(new_class["starting_equipment"])
-            for item in starting_equipment["starting_equipment"]:
+            starting_equipment = new_class["starting_equipment"]
+            for item in starting_equipment:
                 for i in range(item["quantity"]):
                     self.giveItem(SRD(item["equipment"]["url"]))
 
             self.player_options["starting_equipment"] = []
-            for item_option in starting_equipment["starting_equipment_options"]:
-                options = []
-                if hasattr(item_option["from"], "get"):
-                    options.append(
-                        item_option["from"][list(item_option["from"].keys())[0]]["name"]
-                    )
-                else:
-                    for option in item_option["from"]:
-                        if "equipment_category" in option:
-                            options.append(option["equipment_category"]["name"])
-                        elif "equipment_option" in option:
-                            options.append(
-                                f'{"%s " % option["equipment_option"]["choose"] if option["equipment_option"]["choose"] != 1 else ""}{option["equipment_option"]["from"]["name"] if "equipment_category" not in option["equipment_option"]["from"] else option["equipment_option"]["from"]["equipment_category"]["name"]}'
-                            )
-                        elif "equipment" in option:
-                            options.append(option["equipment"]["name"])
-                self.player_options["starting_equipment"].append(
-                    f"choose {item_option['choose']} from {', '.join(options)}"
-                )
+            LOG.warning("starting  equipment options needs major revision")
+            # for item_option in new_class["starting_equipment_options"]:
+            #     options = []
+            #     if hasattr(item_option["from"], "get"):
+            #         print(item_option["from"][list(item_option["from"].keys())[1]])
+            #         exit()
+            #         options.append(
+            #             item_option["from"][list(item_option["from"].keys())[0]]["name"]
+            #         )
+            #     else:
+            #         for option in item_option["from"]:
+            #             if "equipment_category" in option:
+            #                 options.append(option["equipment_category"]["name"])
+            #             elif "equipment_option" in option:
+            #                 options.append(
+            #                     f'{"%s " % option["equipment_option"]["choose"] if option["equipment_option"]["choose"] != 1 else ""}{option["equipment_option"]["from"]["name"] if "equipment_category" not in option["equipment_option"]["from"] else option["equipment_option"]["from"]["equipment_category"]["name"]}'
+            #                 )
+            #             elif "equipment" in option:
+            #                 options.append(option["equipment"]["name"])
+            #     self.player_options["starting_equipment"].append(
+            #         f"choose {item_option['choose']} from {', '.join(options)}"
+            #     )
 
-            self.class_levels = SRD(new_class["class_levels"])
-            if "spellcasting" in new_class:
-                self.spellcasting_stat = SRD(new_class["spellcasting"])[
-                    "spellcasting_ability"
-                ]["index"]
-            else:
-                self.spellcasting_stat = None
+            print(new_class["class_levels"])
+            self.class_levels = SRD_class_levels[self.class_index]
+            LOG.warning("Spellcating needs revising")
+            # if "spellcasting" in new_class:
+            #     self.spellcasting_stat = SRD(new_class["spellcasting"])[
+            #         "spellcasting_ability"
+            #     ]["index"]
+            # else:
+            #     self.spellcasting_stat = None
 
             self.applyClassLevel()
 

@@ -1,0 +1,1 @@
+{"index": "hand-crossbows", "type": "Weapons", "name": "Hand crossbows", "classes": [{"index": "bard", "name": "Bard", "url": "/api/classes/bard"}, {"index": "rogue", "name": "Rogue", "url": "/api/classes/rogue"}], "races": [], "url": "/api/proficiencies/hand-crossbows", "reference": {"index": "crossbow-hand", "name": "Crossbow, hand", "url": "/api/equipment/crossbow-hand"}}
