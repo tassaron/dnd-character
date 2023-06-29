@@ -5,7 +5,7 @@ import math
 import logging
 
 from .roll import RollStats
-from .SRD import SRD
+from .SRD import SRD, SRD_class_levels
 from .experience import Experience, experience_at_level, level_at_experience
 
 
@@ -382,40 +382,64 @@ class Character:
                 saving_throw["name"] for saving_throw in new_class["saving_throws"]
             ]
 
-            starting_equipment = SRD(new_class["starting_equipment"])
-            for item in starting_equipment["starting_equipment"]:
+            starting_equipment = new_class["starting_equipment"]
+            for item in starting_equipment:
                 for i in range(item["quantity"]):
                     self.giveItem(SRD(item["equipment"]["url"]))
 
             self.player_options["starting_equipment"] = []
-            for item_option in starting_equipment["starting_equipment_options"]:
-                options = []
-                if hasattr(item_option["from"], "get"):
-                    options.append(
-                        item_option["from"][list(item_option["from"].keys())[0]]["name"]
-                    )
-                else:
-                    for option in item_option["from"]:
-                        if "equipment_category" in option:
-                            options.append(option["equipment_category"]["name"])
-                        elif "equipment_option" in option:
-                            options.append(
-                                f'{"%s " % option["equipment_option"]["choose"] if option["equipment_option"]["choose"] != 1 else ""}{option["equipment_option"]["from"]["name"] if "equipment_category" not in option["equipment_option"]["from"] else option["equipment_option"]["from"]["equipment_category"]["name"]}'
-                            )
-                        elif "equipment" in option:
-                            options.append(option["equipment"]["name"])
-                self.player_options["starting_equipment"].append(
-                    f"choose {item_option['choose']} from {', '.join(options)}"
+
+            def add_to_starting_options(choice:str):
+                self.player_options["starting_equipment"].append(choice)
+
+            def fetch_choices_string(option):
+                choices = SRD(option["equipment_category"]["url"])["equipment"]
+                choices_names = [c["name"] for c in choices]
+                return "{} (choice from {})".format(
+                    option["equipment_category"]["name"],
+                    ", ".join(choices_names)
                 )
 
-            self.class_levels = SRD(new_class["class_levels"])
+            for item_option in new_class["starting_equipment_options"]:
+                options = []
+                opts = item_option["from"]
+                if not "options" in opts.keys():
+                    choices = fetch_choices_string(opts)
+                    add_to_starting_options(choices)
+                    
+                else:
+                    for opt in opts["options"]:
+                        opt_type = opt["option_type"]
+                        if opt_type == "counted_reference":
+                            options.append("{} x {}".format(
+                                opt["count"], opt["of"]["name"] 
+                            ))
+                        elif opt_type == "choice":
+                            how_many = opt["choice"]["choose"]
+                            choices = fetch_choices_string(opt["choice"]["from"])
+                            options.append("{} x {}".format(
+                                how_many, choices 
+                            ))
+                        elif opt_type == "multiple":
+                            try:
+                                combo = [str(c["count"]) + " " + c["of"]["name"] for c in opt["items"]]
+                                add_to_starting_options("{}".format(', '.join(combo)))
+                            except KeyError:
+                                # shield or martial weapon
+                                martial_weapons = fetch_choices_string(opt["items"][0]["choice"]["from"])
+                                shield = opt["items"][1]["of"]["name"]
+                                add_to_starting_options("choose 1 from {} or a {}".format(martial_weapons, shield))
+                                continue
+
+                    add_to_starting_options("choose from {}".format(", ".join(options)))
+
+            self.class_levels = SRD_class_levels[self.class_index]
             if "spellcasting" in new_class:
-                self.spellcasting_stat = SRD(new_class["spellcasting"])[
-                    "spellcasting_ability"
+                self.spellcasting_stat = new_class["spellcasting"][
+                     "spellcasting_ability"
                 ]["index"]
             else:
                 self.spellcasting_stat = None
-
             self.applyClassLevel()
 
             return False

@@ -36,5 +36,5 @@ def test_removing_shield_does_not_affect_equipped_armour():
 def test_removing_armour_does_not_affect_equipped_shield():
     t = Bard(dexterity=10)
     t.giveItem(SRD_equipment["shield"])
-    t.removeItem(SRD_equipment["leather"])
+    t.removeItem(SRD_equipment["leather-armor"])
     assert t.armour_class == 12

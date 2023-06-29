@@ -1,0 +1,1 @@
+{"index": "holy-symbols", "name": "Holy Symbols", "equipment": [{"index": "amulet", "name": "Amulet", "url": "/api/equipment/amulet"}, {"index": "emblem", "name": "Emblem", "url": "/api/equipment/emblem"}, {"index": "reliquary", "name": "Reliquary", "url": "/api/equipment/reliquary"}], "url": "/api/equipment-categories/holy-symbols"}
