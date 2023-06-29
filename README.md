@@ -32,7 +32,7 @@ brianna = Bard(
 zombie = SRD_monsters["zombie"]
 attack_bonus = zombie["actions"][0]["attack_bonus"]
 # Zombie rolls a d20 to attack a Bard
-if randint(1, 20) + attack_bonus >= brianna.armour_class:
+if randint(1, 20) + attack_bonus >= brianna.armor_class:
     print(f"{brianna.name} was hit by {zombie['name']}!")
 else:
     print(f"{brianna.name} bravely dodged the attack")
@@ -58,10 +58,10 @@ from dnd_character.classes import Paladin
 from pprint import pprint
 sturm = Paladin(dexterity=10)
 pprint(sturm.inventory)
-print(sturm.armour_class)
+print(sturm.armor_class)
 # Remove Chain Mail
 sturm.removeItem(sturm.inventory[0])
-print(sturm.armour_class)
+print(sturm.armor_class)
 # New Item
 from dnd_character.equipment import SRD_equipment
 dragonlance = SRD_equipment['lance']

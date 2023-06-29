@@ -12,7 +12,7 @@ def test_modifier_negative():
     assert Character.getModifier(6) == -2
 
 
-def test_dexterity_setter_affects_armour_class():
+def test_dexterity_setter_affects_armor_class():
     t = Character(dexterity=10)
     t.dexterity = 12
-    assert t.armour_class == 11
+    assert t.armor_class == 11

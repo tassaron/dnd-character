@@ -97,17 +97,17 @@ def test_save_and_load_equipment():
     assert dict(Character(**dict(player))) == dict(player)
 
 
-def test_save_and_load_armour_class():
+def test_save_and_load_armor_class():
     player = Character(dexterity=14)
     assert dict(Character(**dict(player))) == dict(player)
 
 
-def test_save_and_load_light_armour_class():
+def test_save_and_load_light_armor_class():
     player = Character(classs=SRD_classes["bard"], dexterity=14)
     assert dict(Character(**dict(player))) == dict(player)
 
 
-def test_save_and_load_heavy_armour_class():
+def test_save_and_load_heavy_armor_class():
     player = Character(classs=SRD_classes["paladin"], dexterity=14)
     assert dict(Character(**dict(player))) == dict(player)
 

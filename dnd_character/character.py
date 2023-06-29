@@ -64,7 +64,7 @@ class Character:
         class_features_enabled: list = None,
         spellcasting_stat: str = None,
         player_options: dict = None,
-        armour_class: int = None,
+        armor_class: int = None,
         death_saves: int = 0,
         death_fails: int = 0,
         dead: bool = False,
@@ -223,10 +223,10 @@ class Character:
         self.classs = classs
 
         # base armour class is 10 + DEX; will be affected by inventory
-        if armour_class is not None:
-            self.armour_class = armour_class
-        elif not hasattr(self, "armour_class"):
-            self.armour_class = self.baseArmourClass
+        if armor_class is not None:
+            self.armor_class = armor_class
+        elif not hasattr(self, "armor_class"):
+            self.armor_class = self.baseArmourClass
         self._dead = dead
         self._death_saves = death_saves
         self._death_fails = death_fails
@@ -341,7 +341,7 @@ class Character:
     @dexterity.setter
     def dexterity(self, new_value):
         self._dexterity = new_value
-        self.armour_class = self.baseArmourClass
+        self.armor_class = self.baseArmourClass
         for item in self.inventory:
             self.applyArmourClass(item)
 
@@ -495,17 +495,17 @@ class Character:
             if item["armor_category"] == "Shield":
                 self.removeShields()
                 try:
-                    self.armour_class += item["armor_class"]["base"]
+                    self.armor_class += item["armor_class"]["base"]
                 except AttributeError:
                     # shield during __init__ without armour
-                    self.armour_class = (
+                    self.armor_class = (
                         10
                         + item["armor_class"]["base"]
                         + Character.getModifier(self.dexterity)
                     )
             else:
                 self.removeArmour()
-                self.armour_class = item["armor_class"]["base"] + (
+                self.armor_class = item["armor_class"]["base"] + (
                     0
                     if not item["armor_class"]["dex_bonus"]
                     else Character.getModifier(self.dexterity)
@@ -518,7 +518,7 @@ class Character:
     def giveItem(self, item: dict):
         """
         Adds an item to the Character's inventory list, as a dictionary.
-        If the item is armour or a shield, the armour_class attribute will be set
+        If the item is armour or a shield, the armor_class attribute will be set
         and any other armour/shields in the inventory will be removed.
         """
         self.applyArmourClass(item)
@@ -528,13 +528,13 @@ class Character:
     def removeItem(self, item):
         if item["equipment_category"]["index"] == "armor":
             if item["armor_category"] == "Shield":
-                self.armour_class -= item["armor_class"]["base"]
+                self.armor_class -= item["armor_class"]["base"]
             else:
                 extra_ac_bonus = 0
                 shield = [item for item in self.inventory if item["equipment_category"]["index"] == "armor" and item["armor_category"] == "Shield"]
                 if shield:
                     extra_ac_bonus = shield[0]["armor_class"]["base"]
-                self.armour_class = 10 + extra_ac_bonus + Character.getModifier(self.dexterity)
+                self.armor_class = 10 + extra_ac_bonus + Character.getModifier(self.dexterity)
 
         self.inventory.remove(item)
 
