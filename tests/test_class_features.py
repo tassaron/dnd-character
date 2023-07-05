@@ -37,3 +37,17 @@ def test_class_features_apply_high_experience_initialized():
 def test_class_features_apply_high_level_initialized():
     bard = Character(classs=CLASSES["bard"], level=20)
     assert len(bard.class_features) == 24
+
+
+def test_class_features_regenerated_if_none():
+    bard = Character(classs=CLASSES["bard"])
+    bard.class_features = None
+    new_bard = Character(**dict(bard))
+    assert len(new_bard.class_features) == 2
+
+
+def test_classless_class_features_regenerated_if_none():
+    char = Character()
+    char.class_features = None
+    new_char = Character(**dict(char))
+    assert len(new_char.class_features) == 0
