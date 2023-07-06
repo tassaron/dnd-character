@@ -22,6 +22,7 @@ class Character:
 
     def __init__(
         self,
+        *, # This * forces the caller to use keyword arguments
         uid: UUID = None,
         name: str = None,
         age: str = None,
