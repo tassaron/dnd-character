@@ -4,13 +4,21 @@ experience points, leveling up and down, etc.
 """
 from functools import lru_cache
 import logging
+import typing
+
+
+if typing.TYPE_CHECKING:
+    # allows type annotations to work without a circular import
+    # https://peps.python.org/pep-0563/
+    from .character import Character as Character
 
 
 LOG = logging.getLogger(__package__)
 
 
 class Experience:
-    def __init__(self, character, experience):
+    def __init__(self, character: "Character", experience: int):
+        # this typically occurs while `character` is partially initialized (during __init__)
         self.character = character
         self._experience = experience
         self.character.level = level_at_experience(experience)
