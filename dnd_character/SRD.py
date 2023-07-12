@@ -74,8 +74,10 @@ def __SRD_API_CALL():
 
 SRD = __SRD_API_CALL()
 
+
 def load_equipment():
     from .equipment import SRD_equipment
+
 
 SRD_endpoints = SRD("/api/")
 SRD_classes = {}

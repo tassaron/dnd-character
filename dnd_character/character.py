@@ -21,7 +21,7 @@ class Character:
 
     def __init__(
         self,
-        *, # This * forces the caller to use keyword arguments
+        *,  # This * forces the caller to use keyword arguments
         uid: UUID = None,
         name: str = None,
         age: str = None,
@@ -126,19 +126,19 @@ class Character:
         self.wisdom = self.setInitialAbilityScore(wisdom)
         self.intelligence = self.setInitialAbilityScore(intelligence)
         self.charisma = self.setInitialAbilityScore(charisma)
-        
+
         # Hit Dice and Hit Points: self.hd == 8 is a d8, 10 is a d10, etc
         self.hd = hd if hd is not None else 8
         self.max_hp = max_hp if max_hp is not None else int(self.hd)
         self._hp = hp if hp is not None else int(self.max_hp)
 
         # Experience points
-        self._level = 1 
+        self._level = 1
         # self.level could be altered by Experience object below
         if experience is None:
             experience = 0
         self._experience = Experience(character=self, experience=int(experience))
-        
+
         # Levels
         # self.level could be altered by Experience object above
         if level is not None:
@@ -386,15 +386,14 @@ class Character:
 
             self.player_options["starting_equipment"] = []
 
-            def add_to_starting_options(choice:str):
+            def add_to_starting_options(choice: str):
                 self.player_options["starting_equipment"].append(choice)
 
             def fetch_choices_string(option):
                 choices = SRD(option["equipment_category"]["url"])["equipment"]
                 choices_names = [c["name"] for c in choices]
                 return "{} (choice from {})".format(
-                    option["equipment_category"]["name"],
-                    ", ".join(choices_names)
+                    option["equipment_category"]["name"], ", ".join(choices_names)
                 )
 
             for item_option in new_class["starting_equipment_options"]:
@@ -403,29 +402,36 @@ class Character:
                 if not "options" in opts.keys():
                     choices = fetch_choices_string(opts)
                     add_to_starting_options(choices)
-                    
+
                 else:
                     for opt in opts["options"]:
                         opt_type = opt["option_type"]
                         if opt_type == "counted_reference":
-                            options.append("{} x {}".format(
-                                opt["count"], opt["of"]["name"] 
-                            ))
+                            options.append(
+                                "{} x {}".format(opt["count"], opt["of"]["name"])
+                            )
                         elif opt_type == "choice":
                             how_many = opt["choice"]["choose"]
                             choices = fetch_choices_string(opt["choice"]["from"])
-                            options.append("{} x {}".format(
-                                how_many, choices 
-                            ))
+                            options.append("{} x {}".format(how_many, choices))
                         elif opt_type == "multiple":
                             try:
-                                combo = [str(c["count"]) + " " + c["of"]["name"] for c in opt["items"]]
-                                add_to_starting_options("{}".format(', '.join(combo)))
+                                combo = [
+                                    str(c["count"]) + " " + c["of"]["name"]
+                                    for c in opt["items"]
+                                ]
+                                add_to_starting_options("{}".format(", ".join(combo)))
                             except KeyError:
                                 # shield or martial weapon
-                                martial_weapons = fetch_choices_string(opt["items"][0]["choice"]["from"])
+                                martial_weapons = fetch_choices_string(
+                                    opt["items"][0]["choice"]["from"]
+                                )
                                 shield = opt["items"][1]["of"]["name"]
-                                add_to_starting_options("choose 1 from {} or a {}".format(martial_weapons, shield))
+                                add_to_starting_options(
+                                    "choose 1 from {} or a {}".format(
+                                        martial_weapons, shield
+                                    )
+                                )
                                 continue
 
                     add_to_starting_options("choose from {}".format(", ".join(options)))
@@ -433,7 +439,7 @@ class Character:
             self.class_levels = SRD_class_levels[self.class_index]
             if "spellcasting" in new_class:
                 self.spellcasting_stat = new_class["spellcasting"][
-                     "spellcasting_ability"
+                    "spellcasting_ability"
                 ]["index"]
             else:
                 self.spellcasting_stat = None
@@ -507,7 +513,7 @@ class Character:
                     if not item["armor_class"]["dex_bonus"]
                     else Character.getModifier(self.dexterity)
                 )
-    
+
     @property
     def baseArmourClass(self):
         return 10 + Character.getModifier(self.dexterity)
@@ -528,10 +534,17 @@ class Character:
                 self.armor_class -= item["armor_class"]["base"]
             else:
                 extra_ac_bonus = 0
-                shield = [item for item in self.inventory if item["equipment_category"]["index"] == "armor" and item["armor_category"] == "Shield"]
+                shield = [
+                    item
+                    for item in self.inventory
+                    if item["equipment_category"]["index"] == "armor"
+                    and item["armor_category"] == "Shield"
+                ]
                 if shield:
                     extra_ac_bonus = shield[0]["armor_class"]["base"]
-                self.armor_class = 10 + extra_ac_bonus + Character.getModifier(self.dexterity)
+                self.armor_class = (
+                    10 + extra_ac_bonus + Character.getModifier(self.dexterity)
+                )
 
         self.inventory.remove(item)
 
@@ -560,6 +573,7 @@ class Character:
         """
         if stat is None:
             import random
+
             # roll 4d6
             rolls = [random.randint(1, 6) for _ in range(4)]
             # drop the lowest by sorting and deleting index 0
@@ -581,6 +595,4 @@ class Character:
         """
         Calculate maximum hitpoints using hit dice (HD), level and constitution modifier
         """
-        return (
-            hd + ((int(hd / 2) + 1) * (level - 1)) + cls.getModifier(constitution)
-        )
+        return hd + ((int(hd / 2) + 1) * (level - 1)) + cls.getModifier(constitution)
