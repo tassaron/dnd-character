@@ -4,7 +4,6 @@ from functools import reduce
 import math
 import logging
 
-from .roll import RollStats
 from .SRD import SRD, SRD_class_levels
 from .experience import Experience, experience_at_level, level_at_experience
 
@@ -562,9 +561,13 @@ class Character:
         Set ability score to an int. If the argument is None, then this method
         instead rolls for the initial starting ability score.
         """
-        if stat == None:
-            roll = RollStats()
-            return roll.stat_roller()
+        if stat is None:
+            import random
+            # roll 4d6
+            rolls = [random.randint(1, 6) for _ in range(4)]
+            # drop the lowest by sorting and deleting index 0
+            rolls = sorted(rolls)[1:]
+            return sum(rolls)
         else:
             return int(stat)
 
