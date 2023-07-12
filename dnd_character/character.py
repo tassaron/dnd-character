@@ -137,10 +137,7 @@ class Character:
         # self.level could be altered by Experience object below
         if experience is None:
             experience = 0
-        if type(experience) == Experience:
-            self._experience = experience
-        else:
-            self._experience = Experience(character=self, experience=experience)
+        self._experience = Experience(character=self, experience=int(experience))
         
         # Levels
         # self.level could be altered by Experience object above
