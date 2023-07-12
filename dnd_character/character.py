@@ -75,6 +75,7 @@ class Character:
         death_fails: int = 0,
         exhaustion: int = 0,
         dead: bool = False,
+        conditions: dict = None,
     ):
         """
         Typical Arguments:
@@ -101,7 +102,13 @@ class Character:
         self.age = age
         self.gender = gender
         self.description = description
-        self.biography = biography
+        self.background = background
+        self.personality = personality
+        self.ideals = ideals
+        self.bonds = bonds
+        self.flaws = flaws
+        self.species = species
+        self.speed = 30 if speed is None else int(speed)
         self.player_options = (
             player_options if player_options is not None else {"starting_equipment": []}
         )
@@ -241,7 +248,32 @@ class Character:
             if hp is None:
                 # Set character's HP to the maximum for their level,
                 # only if the level isn't custom! (if it matches experience points according to SRD)
-                self.hp = Character.maximum_hp(self.hd, self.level, self.constitution)
+                self.current_hp = Character.maximum_hp(
+                    self.hd, self.level, self.constitution
+                )
+
+        # Conditions
+        all_conditions = [
+            "blinded",
+            "charmed",
+            "deafened",
+            "frightened",
+            "grappled",
+            "incapacitated",
+            "invisible",
+            "paralyzed",
+            "petrified",
+            "poisoned",
+            "prone",
+            "restrained",
+            "stunned",
+            "unconscious",
+        ]
+        if conditions is None:
+            conditions = {}
+        for condition in all_conditions:
+            if condition not in conditions:
+                conditions[condition] = False
 
     def __str__(self):
         return (
