@@ -129,7 +129,7 @@ def test_str_repr():
             for attr in mandatory_attrs
         ]
     ) == len(mandatory_attrs)
-    assert f"Biography:\n{str(player.biography)}" in character_repr
+    assert f"Background:\n{str(player.background)}" in character_repr
     assert f"Class: {str(player.class_name)}" in character_repr
     assert f"Level: {str(player.level)}" in character_repr
     assert f"Experience: {str(player.experience)}" in character_repr

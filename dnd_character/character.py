@@ -26,9 +26,15 @@ class Character:
         name: str = None,
         age: str = None,
         gender: str = None,
+        species: str = None,
+        speed: int = None,
         alignment: str = None,
         description: str = None,
-        biography: str = None,
+        background: str = None,
+        personality: str = None,
+        ideals: str = None,
+        bonds: str = None,
+        flaws: str = None,
         classs: dict = None,
         class_name: str = None,
         class_index: str = None,
@@ -67,6 +73,7 @@ class Character:
         armor_class: int = None,
         death_saves: int = 0,
         death_fails: int = 0,
+        exhaustion: int = 0,
         dead: bool = False,
     ):
         """
@@ -227,6 +234,7 @@ class Character:
         self._dead = dead
         self._death_saves = death_saves
         self._death_fails = death_fails
+        self.exhaustion = int(exhaustion)
 
         if self.level == level_at_experience(self._experience._experience):
             self.level = self._level
@@ -238,6 +246,7 @@ class Character:
     def __str__(self):
         return (
             f"Name: {self.name}\n"
+            f"Background:\n{self.background}\n\n"
             f"Age: {self.age}\n"
             f"Gender: {self.gender}\n"
             f"Description: {self.description}\n"
