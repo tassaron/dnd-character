@@ -62,11 +62,19 @@ def test_custom_level_number_overwritten():
 def test_custom_level_has_no_progression():
     character = Character(level=3, experience=experience_at_level(2) - 1)
     assert character.experience.to_next_level == 0
+    assert character.experience.to_last_level == 0
 
 
-def test_level_19():
+def test_level_19_to_next_level():
     character = Character(level=19)
     assert character.experience.to_next_level == 50000
+
+
+def test_level_19_to_last_level():
+    character = Character(level=19)
+    assert character.experience.to_last_level == 0
+    character.experience += 49999
+    assert character.experience.to_last_level == 49999
 
 
 def test_maximum_level():
@@ -91,3 +99,8 @@ def test_experience_setter_object():
     experience = Experience(character, 200)
     character.experience = experience
     assert character.experience == 200
+
+
+def test_cast_experience_to_int():
+    character = Character(experience=100)
+    assert int(character.experience) == 100

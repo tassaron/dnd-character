@@ -68,10 +68,7 @@ class Experience:
                 f" which means to_last_level returned 0"
             )
             return 0
-        try:
-            return self._experience - level_progression[self.character.level]
-        except IndexError:
-            return 0
+        return self._experience - level_progression[self.character.level]
 
 
 @lru_cache(maxsize=None)
