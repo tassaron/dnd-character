@@ -87,7 +87,7 @@ def test_rolled_stats_serialize_after_literal_eval():
 
 def test_save_and_load_hitpoints():
     player = Character()
-    player.hp = 6
+    player.current_hp = 6
     assert dict(Character(**dict(player))) == dict(player)
 
 

@@ -49,8 +49,11 @@ class Character:
         intelligence: int = None,
         charisma: int = None,
         max_hp: int = None,
-        hp: int = None,
-        hd: int = None,
+        current_hp: int = None,
+        temp_hp: int = None,
+        hd: int = 8,
+        max_hd: int = None,
+        current_hd: int = None,
         proficiencies: dict = None,
         saving_throws: list = None,
         cantrips_known: dict = None,
@@ -93,7 +96,6 @@ class Character:
                 wisdom       (int):  character's starting wisdom
                 intelligence (int):  character's starting intelligence
                 charisma     (int):  character's starting charisma
-                hp           (int):  character's starting hitpoint value
         """
 
         # Decorative attrs that don't affect program logic
@@ -142,9 +144,18 @@ class Character:
         self.charisma = self.setInitialAbilityScore(charisma)
 
         # Hit Dice and Hit Points: self.hd == 8 is a d8, 10 is a d10, etc
-        self.hd = hd if hd is not None else 8
-        self.max_hp = max_hp if max_hp is not None else int(self.hd)
-        self._hp = hp if hp is not None else int(self.max_hp)
+        self.hd = 8 if hd is None else hd
+        self.max_hd = 1 if max_hd is None else max_hd
+        self.current_hd = 1 if current_hd is None else current_hd
+        self.max_hp = (
+            Character.maximum_hp(
+                self.hd, 1 if level is None else int(level), self.constitution
+            )
+            if max_hp is None
+            else max_hp
+        )
+        self._current_hp = current_hp if current_hp is not None else int(self.max_hp)
+        self.temp_hp = 0 if temp_hp is None else int(temp_hp)
 
         # Experience points
         self._level = 1
@@ -245,7 +256,7 @@ class Character:
 
         if self.level == level_at_experience(self._experience._experience):
             self.level = self._level
-            if hp is None:
+            if current_hp is None:
                 # Set character's HP to the maximum for their level,
                 # only if the level isn't custom! (if it matches experience points according to SRD)
                 self.current_hp = Character.maximum_hp(
@@ -282,7 +293,6 @@ class Character:
             f"Age: {self.age}\n"
             f"Gender: {self.gender}\n"
             f"Description: {self.description}\n"
-            f"Biography:\n{self.biography}\n\n"
             f"Class: {self.class_name}\n"
             f"Level: {str(self.level)}\n"
             f"Current Experience: {str(self.experience)}\n"
@@ -295,7 +305,14 @@ class Character:
     def keys(self):
         keys = [key for key in self.__dict__ if not key.startswith("_")]
         keys.extend(
-            ["experience", "death_saves", "death_fails", "dexterity", "dead", "hp"]
+            [
+                "experience",
+                "death_saves",
+                "death_fails",
+                "dexterity",
+                "dead",
+                "current_hp",
+            ]
         )
         return keys
 
@@ -312,7 +329,7 @@ class Character:
                 self._death_fails,
                 self._dexterity,
                 self._dead,
-                self._hp,
+                self._current_hp,
             ]
         )
         return vals
@@ -361,16 +378,16 @@ class Character:
             self._death_fails = new_value
 
     @property
-    def hp(self):
-        return self._hp
+    def current_hp(self):
+        return self._current_hp
 
-    @hp.setter
-    def hp(self, new_value: int):
+    @current_hp.setter
+    def current_hp(self, new_value: int):
         if new_value < 0:
             new_value = 0
         elif new_value > self.max_hp:
             new_value = int(self.max_hp)
-        self._hp = new_value
+        self._current_hp = new_value
 
     @property
     def dexterity(self):
@@ -511,8 +528,10 @@ class Character:
     @level.setter
     def level(self, new_level):
         self._level = new_level
-        if self.hp == self.max_hp:
-            self.hp = Character.maximum_hp(self.hd, new_level, self.constitution)
+        if self.current_hp == self.max_hp:
+            self.current_hp = Character.maximum_hp(
+                self.hd, new_level, self.constitution
+            )
         self.max_hp = Character.maximum_hp(self.hd, new_level, self.constitution)
         self.applyClassLevel()
 

@@ -9,8 +9,8 @@ def test_maximum_hp_function():
 def test_level_one_max_hp():
     t = Character(constitution=10)
     assert t.max_hp == 8
-    t.hp -= 1
-    assert t.hp == t.max_hp - 1
+    t.current_hp -= 1
+    assert t.current_hp == t.max_hp - 1
 
 
 def test_level_ten_max_hp():
@@ -21,8 +21,8 @@ def test_level_ten_max_hp():
 def test_level_one_barbarian_max_hp():
     t = Barbarian(constitution=10)
     assert t.max_hp == 12
-    t.hp -= 1
-    assert t.hp == t.max_hp - 1
+    t.current_hp -= 1
+    assert t.current_hp == t.max_hp - 1
 
 
 def test_level_ten_barbarian_max_hp():
@@ -32,8 +32,8 @@ def test_level_ten_barbarian_max_hp():
 
 def test_minimum_hp():
     t = Character(constitution=10)
-    t.hp = 0
-    t.hp -= 1
-    assert t.hp == 0
-    t.hp = -1
-    assert t.hp == 0
+    t.current_hp = 0
+    t.current_hp -= 1
+    assert t.current_hp == 0
+    t.current_hp = -1
+    assert t.current_hp == 0
