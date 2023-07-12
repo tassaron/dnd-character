@@ -1,5 +1,6 @@
 from dnd_character.character import Character
 
+
 def test_modifier_zero():
     assert Character.getModifier(10) == 0
 

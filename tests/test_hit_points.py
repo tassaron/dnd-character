@@ -37,4 +37,3 @@ def test_minimum_hp():
     assert t.hp == 0
     t.hp = -1
     assert t.hp == 0
-    

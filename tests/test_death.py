@@ -37,6 +37,7 @@ def test_death_saves_upper_range():
     with pytest.raises(ValueError):
         c.death_saves = 4
 
+
 def test_death_saves_lower_range():
     c = Character()
     with pytest.raises(ValueError):
@@ -53,4 +54,3 @@ def test_death_fails_lower_range():
     c = Character()
     with pytest.raises(ValueError):
         c.death_fails = -1
-

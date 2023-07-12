@@ -123,12 +123,26 @@ def test_str_repr():
         "gender",
         "description",
     ]
-    assert sum([f"{attr.title()}: {str(player.__dict__[attr])}" in character_repr for attr in mandatory_attrs]) == len(mandatory_attrs)
+    assert sum(
+        [
+            f"{attr.title()}: {str(player.__dict__[attr])}" in character_repr
+            for attr in mandatory_attrs
+        ]
+    ) == len(mandatory_attrs)
     assert f"Biography:\n{str(player.biography)}" in character_repr
     assert f"Class: {str(player.class_name)}" in character_repr
     assert f"Level: {str(player.level)}" in character_repr
     assert f"Experience: {str(player.experience)}" in character_repr
-    assert f"to next level: {str(player.experience.to_next_level)}" in character_repr.lower()
-    assert sum([value['name'] in character_repr for value in player.proficiencies.values()]) == len(player.proficiencies)
-    assert sum([value['name'] in character_repr for value in player.inventory]) == len(player.inventory)
-    assert sum([value['name'] in character_repr for value in player.class_features.values()]) == len(player.class_features)
+    assert (
+        f"to next level: {str(player.experience.to_next_level)}"
+        in character_repr.lower()
+    )
+    assert sum(
+        [value["name"] in character_repr for value in player.proficiencies.values()]
+    ) == len(player.proficiencies)
+    assert sum([value["name"] in character_repr for value in player.inventory]) == len(
+        player.inventory
+    )
+    assert sum(
+        [value["name"] in character_repr for value in player.class_features.values()]
+    ) == len(player.class_features)
