@@ -1,10 +1,9 @@
 from dnd_character import Character
-from dnd_character.classes import CLASSES
+from dnd_character.classes import CLASSES, Fighter
 from dnd_character.experience import experience_at_level
 
 
 if __name__ == "__main__":
-
     thor = Character(
         name="Thor Odinson",
         age="34",
@@ -15,7 +14,13 @@ if __name__ == "__main__":
         classs=CLASSES["fighter"],
     )
 
-    # Thor is created, lets display some stats
+    # Or you can use the class name as a function:
+    another_fighter = Fighter(name="Thor's Friend")
+
+    # See! They are both Fighters
+    assert thor.class_features == another_fighter.class_features
+
+    # Now that Thor is created, let's display the character in terminal
     print(str(thor))
 
     # Let's see what Thor looks like as a level 2
