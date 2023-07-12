@@ -533,6 +533,11 @@ class Character:
                 self.hd, new_level, self.constitution
             )
         self.max_hp = Character.maximum_hp(self.hd, new_level, self.constitution)
+        if self.current_hd == self.max_hd:
+            self.current_hd = new_level
+        self.max_hd = new_level
+        if self.current_hd > self.max_hd:
+            self.current_hd = self.max_hd
         self.applyClassLevel()
 
     def removeShields(self):
