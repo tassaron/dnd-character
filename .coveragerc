@@ -1,0 +1,5 @@
+# https://github.com/nedbat/coveragepy/issues/831
+[report]
+exclude_lines = 
+    pragma: no cover
+    if typing.TYPE_CHECKING:
