@@ -420,90 +420,90 @@ class Character:
     @classs.setter
     def classs(self, new_class):
         self.__class = new_class
-        if new_class is not None:
-            self.class_name = new_class["name"]
-            self.class_index = new_class["index"]
-            self.hd = new_class["hit_die"]
 
-            # create dict such as { "all-armor": {"name": "All armor", "type": "Armor"} }
-            for proficiency in new_class["proficiencies"]:
-                data = SRD(proficiency["url"])
-                self.proficiencies[proficiency["index"]] = {
-                    "name": data["name"],
-                    "type": data["type"],
-                }
+        if new_class is None:
+            return
 
-            self.saving_throws = [
-                saving_throw["name"] for saving_throw in new_class["saving_throws"]
+        self.class_name = new_class["name"]
+        self.class_index = new_class["index"]
+        self.hd = new_class["hit_die"]
+        self.class_levels = SRD_class_levels[self.class_index]
+        if "spellcasting" in new_class:
+            self.spellcasting_stat = new_class["spellcasting"]["spellcasting_ability"][
+                "index"
             ]
+        else:
+            self.spellcasting_stat = None
+        self.applyClassLevel()
 
-            starting_equipment = new_class["starting_equipment"]
-            for item in starting_equipment:
-                for i in range(item["quantity"]):
-                    self.giveItem(SRD(item["equipment"]["url"]))
+        # create dict such as { "all-armor": {"name": "All armor", "type": "Armor"} }
+        for proficiency in new_class["proficiencies"]:
+            data = SRD(proficiency["url"])
+            self.proficiencies[proficiency["index"]] = {
+                "name": data["name"],
+                "type": data["type"],
+            }
 
-            self.player_options["starting_equipment"] = []
+        self.saving_throws = [
+            saving_throw["name"] for saving_throw in new_class["saving_throws"]
+        ]
 
-            def add_to_starting_options(choice: str):
-                self.player_options["starting_equipment"].append(choice)
+        starting_equipment = new_class["starting_equipment"]
+        for item in starting_equipment:
+            for i in range(item["quantity"]):
+                self.giveItem(SRD(item["equipment"]["url"]))
 
-            def fetch_choices_string(option):
-                choices = SRD(option["equipment_category"]["url"])["equipment"]
-                choices_names = [c["name"] for c in choices]
-                return "{} (choice from {})".format(
-                    option["equipment_category"]["name"], ", ".join(choices_names)
-                )
+        self.player_options["starting_equipment"] = []
 
-            for item_option in new_class["starting_equipment_options"]:
-                options = []
-                opts = item_option["from"]
-                if not "options" in opts.keys():
-                    choices = fetch_choices_string(opts)
-                    add_to_starting_options(choices)
+        def add_to_starting_options(choice: str):
+            self.player_options["starting_equipment"].append(choice)
 
-                else:
-                    for opt in opts["options"]:
-                        opt_type = opt["option_type"]
-                        if opt_type == "counted_reference":
-                            options.append(
-                                "{} x {}".format(opt["count"], opt["of"]["name"])
-                            )
-                        elif opt_type == "choice":
-                            how_many = opt["choice"]["choose"]
-                            choices = fetch_choices_string(opt["choice"]["from"])
-                            options.append("{} x {}".format(how_many, choices))
-                        elif opt_type == "multiple":
-                            try:
-                                combo = [
-                                    str(c["count"]) + " " + c["of"]["name"]
-                                    for c in opt["items"]
-                                ]
-                                add_to_starting_options("{}".format(", ".join(combo)))
-                            except KeyError:
-                                # shield or martial weapon
-                                martial_weapons = fetch_choices_string(
-                                    opt["items"][0]["choice"]["from"]
-                                )
-                                shield = opt["items"][1]["of"]["name"]
-                                add_to_starting_options(
-                                    "choose 1 from {} or a {}".format(
-                                        martial_weapons, shield
-                                    )
-                                )
-                                continue
+        def fetch_choices_string(option):
+            choices = SRD(option["equipment_category"]["url"])["equipment"]
+            choices_names = [c["name"] for c in choices]
+            return "{} (choice from {})".format(
+                option["equipment_category"]["name"], ", ".join(choices_names)
+            )
 
-                    add_to_starting_options("choose from {}".format(", ".join(options)))
+        for item_option in new_class["starting_equipment_options"]:
+            options = []
+            opts = item_option["from"]
+            if not "options" in opts.keys():
+                choices = fetch_choices_string(opts)
+                add_to_starting_options(choices)
 
-            self.class_levels = SRD_class_levels[self.class_index]
-            if "spellcasting" in new_class:
-                self.spellcasting_stat = new_class["spellcasting"][
-                    "spellcasting_ability"
-                ]["index"]
             else:
-                self.spellcasting_stat = None
-            self.applyClassLevel()
+                for opt in opts["options"]:
+                    opt_type = opt["option_type"]
+                    if opt_type == "counted_reference":
+                        options.append(
+                            "{} x {}".format(opt["count"], opt["of"]["name"])
+                        )
+                    elif opt_type == "choice":
+                        how_many = opt["choice"]["choose"]
+                        choices = fetch_choices_string(opt["choice"]["from"])
+                        options.append("{} x {}".format(how_many, choices))
+                    elif opt_type == "multiple":
+                        try:
+                            combo = [
+                                str(c["count"]) + " " + c["of"]["name"]
+                                for c in opt["items"]
+                            ]
+                            add_to_starting_options("{}".format(", ".join(combo)))
+                        except KeyError:
+                            # shield or martial weapon
+                            martial_weapons = fetch_choices_string(
+                                opt["items"][0]["choice"]["from"]
+                            )
+                            shield = opt["items"][1]["of"]["name"]
+                            add_to_starting_options(
+                                "choose 1 from {} or a {}".format(
+                                    martial_weapons, shield
+                                )
+                            )
+                            continue
 
-            return False
+                add_to_starting_options("choose from {}".format(", ".join(options)))
 
     def applyClassLevel(self):
         if self.level > 20:
