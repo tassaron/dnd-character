@@ -148,19 +148,11 @@ def test_str_repr():
     ) == len(player.class_features)
 
 
-def test_class_levels_regenerated_if_none():
-    bard = Bard(level=19)
-    bard.class_levels = None
-    new_bard = Character(**dict(bard))
-    new_bard.level += 1
-    assert len(new_bard.class_features) == 24
-
-
-def test_regenerate_both_class_features_and_levels():
+def test_serialization_of_class_levels():
     bard = Bard(level=20)
+    bard._class_levels = None
     serialized_bard = dict(bard)
-    del serialized_bard["class_levels"]
     del serialized_bard["class_features"]
     new_bard = Character(**serialized_bard)
-    assert new_bard.class_levels == bard.class_levels
+    assert new_bard._class_levels == bard._class_levels
     assert new_bard.class_features == bard.class_features

@@ -124,14 +124,8 @@ class Character:
         # DND Class
         self.class_name = class_name
         self.class_index = class_index
-        self.class_levels = (
-            class_levels
-            if class_levels is not None
-            else (
-                []
-                if class_index not in SRD_class_levels
-                else SRD_class_levels[class_index]
-            )
+        self._class_levels = (
+            [] if class_index not in SRD_class_levels else SRD_class_levels[class_index]
         )
         self.prof_bonus = prof_bonus
         self.ability_score_bonus = ability_score_bonus
@@ -435,7 +429,7 @@ class Character:
         self.class_name = new_class["name"]
         self.class_index = new_class["index"]
         self.hd = new_class["hit_die"]
-        self.class_levels = SRD_class_levels[self.class_index]
+        self._class_levels = SRD_class_levels[self.class_index]
         if "spellcasting" in new_class:
             self.spellcasting_stat = new_class["spellcasting"]["spellcasting_ability"][
                 "index"
@@ -516,7 +510,7 @@ class Character:
     def applyClassLevel(self):
         if self.level > 20:
             return
-        for data in self.class_levels:
+        for data in self._class_levels:
             if data["level"] > self.level:
                 break
             self.ability_score_bonus = data.get(
