@@ -244,11 +244,11 @@ class Character:
         # setting the self.classs attr applies "class features" appropriate to character's level
         self.classs = classs
 
-        # base armour class is 10 + DEX; will be affected by inventory
+        # base armor class is 10 + DEX; will be affected by inventory
         if armor_class is not None:
             self.armor_class = armor_class
         elif not hasattr(self, "armor_class"):
-            self.armor_class = self.baseArmourClass
+            self.armor_class = self.baseArmorClass
         self._dead = dead
         self._death_saves = death_saves
         self._death_fails = death_fails
@@ -396,9 +396,9 @@ class Character:
     @dexterity.setter
     def dexterity(self, new_value):
         self._dexterity = new_value
-        self.armor_class = self.baseArmourClass
+        self.armor_class = self.baseArmorClass
         for item in self.inventory:
-            self.applyArmourClass(item)
+            self.applyArmorClass(item)
 
     @property
     def experience(self):
@@ -549,8 +549,8 @@ class Character:
             ):
                 self.inventory.pop(i)
 
-    def removeArmour(self):
-        """Removes all armour from self.inventory. Used by self.giveItem when equipping armour"""
+    def removeArmor(self):
+        """Removes all armor from self.inventory. Used by self.giveItem when equipping armor"""
         for i, item in enumerate(self.inventory):
             if (
                 item["equipment_category"]["index"] == "armor"
@@ -558,21 +558,21 @@ class Character:
             ):
                 self.inventory.pop(i)
 
-    def applyArmourClass(self, item: dict):
+    def applyArmorClass(self, item: dict):
         if item["equipment_category"]["index"] == "armor":
             if item["armor_category"] == "Shield":
                 self.removeShields()
                 try:
                     self.armor_class += item["armor_class"]["base"]
                 except AttributeError:
-                    # shield during __init__ without armour
+                    # shield during __init__ without armor
                     self.armor_class = (
                         10
                         + item["armor_class"]["base"]
                         + Character.getModifier(self.dexterity)
                     )
             else:
-                self.removeArmour()
+                self.removeArmor()
                 self.armor_class = item["armor_class"]["base"] + (
                     0
                     if not item["armor_class"]["dex_bonus"]
@@ -580,16 +580,16 @@ class Character:
                 )
 
     @property
-    def baseArmourClass(self):
+    def baseArmorClass(self):
         return 10 + Character.getModifier(self.dexterity)
 
     def giveItem(self, item: dict):
         """
         Adds an item to the Character's inventory list, as a dictionary.
-        If the item is armour or a shield, the armor_class attribute will be set
-        and any other armour/shields in the inventory will be removed.
+        If the item is armor or a shield, the armor_class attribute will be set
+        and any other armor/shields in the inventory will be removed.
         """
-        self.applyArmourClass(item)
+        self.applyArmorClass(item)
 
         self.inventory.append(item)
 
