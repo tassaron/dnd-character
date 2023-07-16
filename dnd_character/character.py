@@ -124,7 +124,15 @@ class Character:
         # DND Class
         self.class_name = class_name
         self.class_index = class_index
-        self.class_levels = class_levels if class_levels is not None else []
+        self.class_levels = (
+            class_levels
+            if class_levels is not None
+            else (
+                []
+                if class_index not in SRD_class_levels
+                else SRD_class_levels[class_index]
+            )
+        )
         self.prof_bonus = prof_bonus
         self.ability_score_bonus = ability_score_bonus
         self.class_features = class_features if class_features is not None else {}

@@ -1,4 +1,4 @@
-from dnd_character import Character
+from dnd_character import Character, Bard
 from dnd_character.SRD import SRD_classes
 from dnd_character.equipment import SRD_equipment
 from ast import literal_eval
@@ -146,3 +146,21 @@ def test_str_repr():
     assert sum(
         [value["name"] in character_repr for value in player.class_features.values()]
     ) == len(player.class_features)
+
+
+def test_class_levels_regenerated_if_none():
+    bard = Bard(level=19)
+    bard.class_levels = None
+    new_bard = Character(**dict(bard))
+    new_bard.level += 1
+    assert len(new_bard.class_features) == 24
+
+
+def test_regenerate_both_class_features_and_levels():
+    bard = Bard(level=20)
+    serialized_bard = dict(bard)
+    del serialized_bard["class_levels"]
+    del serialized_bard["class_features"]
+    new_bard = Character(**serialized_bard)
+    assert new_bard.class_levels == bard.class_levels
+    assert new_bard.class_features == bard.class_features
