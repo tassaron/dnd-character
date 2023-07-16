@@ -1,4 +1,4 @@
-from dnd_character import Character, Bard
+from dnd_character import Character, Bard, CLASSES
 from dnd_character.SRD import SRD_classes
 from dnd_character.equipment import SRD_equipment
 from ast import literal_eval
@@ -154,5 +154,7 @@ def test_serialization_of_class_levels():
     serialized_bard = dict(bard)
     del serialized_bard["class_features"]
     new_bard = Character(**serialized_bard)
+    # add _class_levels back onto old bard
+    bard.classs = CLASSES["bard"]
     assert new_bard._class_levels == bard._class_levels
     assert new_bard.class_features == bard.class_features
