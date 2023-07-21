@@ -1,8 +1,17 @@
 import random
 
-def sum_rolls(d100: int = 0, d20: int = 0, d12: int = 0, d10: int = 0, d8: int = 0, d6: int = 0, d4: int = 0,
-              drop_lowest: bool = False):
-    """ Expected use: attack calculation, initial ability score, etc. """
+
+def sum_rolls(
+    d100: int = 0,
+    d20: int = 0,
+    d12: int = 0,
+    d10: int = 0,
+    d8: int = 0,
+    d6: int = 0,
+    d4: int = 0,
+    drop_lowest: bool = False,
+):
+    """Expected use: attack calculation, initial ability score, etc."""
     rolls = [random.randint(1, 100) for _ in range(d100)]
     rolls += [random.randint(1, 20) for _ in range(d20)]
     rolls += [random.randint(1, 12) for _ in range(d12)]
@@ -17,8 +26,10 @@ def sum_rolls(d100: int = 0, d20: int = 0, d12: int = 0, d10: int = 0, d8: int =
     return sum(rolls)
 
 
-def roll_with_advantage_disadvantage(dice: int = 20, advantage: bool = False, disadvantage: bool = False):
-    """ Expected use: D20 (ability checks, saving throws, attack rolls) """
+def roll_with_advantage_disadvantage(
+    dice: int = 20, advantage: bool = False, disadvantage: bool = False
+):
+    """Expected use: D20 (ability checks, saving throws, attack rolls)"""
     if advantage == disadvantage:
         result = random.randint(1, dice)
     else:
