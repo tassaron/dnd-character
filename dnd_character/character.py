@@ -6,6 +6,7 @@ import logging
 
 from .SRD import SRD, SRD_class_levels
 from .experience import Experience, experience_at_level, level_at_experience
+from .dice import sum_rolls
 
 
 LOG = logging.getLogger(__package__)
@@ -639,13 +640,7 @@ class Character:
         instead rolls for the initial starting ability score.
         """
         if stat is None:
-            import random
-
-            # roll 4d6
-            rolls = [random.randint(1, 6) for _ in range(4)]
-            # drop the lowest by sorting and deleting index 0
-            rolls = sorted(rolls)[1:]
-            return sum(rolls)
+            return sum_rolls(d6=4, drop_lowest=True)  # roll 4d6, drop lowest
         else:
             return int(stat)
 
