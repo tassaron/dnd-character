@@ -2,6 +2,7 @@ import random
 
 
 def sum_rolls(
+    *,  # Force caller to use keyword arguments
     d100: int = 0,
     d20: int = 0,
     d12: int = 0,
