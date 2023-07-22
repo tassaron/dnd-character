@@ -3,7 +3,6 @@ A cached function that gets SRD data from a DND 5e REST API
 """
 import json
 from os import environ, walk, path, remove, mkdir
-from functools import wraps
 import logging
 
 

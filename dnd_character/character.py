@@ -1,6 +1,5 @@
 from typing import Optional, Union
 from uuid import uuid4, UUID
-from functools import reduce
 import math
 import logging
 
@@ -471,7 +470,7 @@ class Character:
         for item_option in new_class["starting_equipment_options"]:
             options = []
             opts = item_option["from"]
-            if not "options" in opts.keys():
+            if "options" not in opts.keys():
                 choices = fetch_choices_string(opts)
                 add_to_starting_options(choices)
 
