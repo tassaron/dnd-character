@@ -11,7 +11,7 @@ def sum_rolls(
     d6: int = 0,
     d4: int = 0,
     drop_lowest: bool = False,
-):
+) -> int:
     """Expected use: attack calculation, initial ability score, etc."""
     rolls = [random.randint(1, 100) for _ in range(d100)]
     rolls += [random.randint(1, 20) for _ in range(d20)]
@@ -29,7 +29,7 @@ def sum_rolls(
 
 def roll_with_advantage_disadvantage(
     dice: int = 20, advantage: bool = False, disadvantage: bool = False
-):
+) -> int:
     """Expected use: D20 (ability checks, saving throws, attack rolls)"""
     if advantage == disadvantage:
         result = random.randint(1, dice)

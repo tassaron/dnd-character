@@ -20,7 +20,7 @@ SRD_spells_by_class = {
 }
 
 
-def spells_for_class_level(classs, level):
+def spells_for_class_level(classs: str, level: int) -> set:
     if level > 9 or level < 0:
         raise ValueError("Spell levels only go from 0-9")
     return set(SRD_spells_by_class[classs]).intersection(

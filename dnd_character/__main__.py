@@ -7,7 +7,7 @@ from dnd_character.classes import CLASSES
 CLASS_NAMES = list(CLASSES.keys())
 
 
-def main():
+def main() -> None:
     parser = argparse.ArgumentParser(
         prog="dnd-character",
         description="generate D&D 5e character sheet from terminal",

@@ -1,4 +1,4 @@
-from typing import Optional, Union
+from typing import Optional, Union, Any
 from uuid import uuid4, UUID
 import math
 import logging
@@ -22,63 +22,62 @@ class Character:
     def __init__(
         self,
         *,  # This * forces the caller to use keyword arguments
-        uid: UUID = None,
-        name: str = None,
-        age: str = None,
-        gender: str = None,
-        species: str = None,
-        speed: int = None,
-        alignment: str = None,
-        description: str = None,
-        background: str = None,
-        personality: str = None,
-        ideals: str = None,
-        bonds: str = None,
-        flaws: str = None,
-        classs: dict = None,
-        class_name: str = None,
-        class_index: str = None,
-        class_levels: list = None,
-        level: Union[int, None] = None,
+        uid: Optional[UUID | str] = None,
+        classs: Optional[dict] = None,
+        class_name: Optional[str] = None,
+        class_index: Optional[str] = None,
+        name: Optional[str] = None,
+        age: Optional[str] = None,
+        gender: Optional[str] = None,
+        species: Optional[str] = None,
+        speed: Optional[int] = None,
+        alignment: Optional[str] = None,
+        description: Optional[str] = None,
+        background: Optional[str] = None,
+        personality: Optional[str] = None,
+        ideals: Optional[str] = None,
+        bonds: Optional[str] = None,
+        flaws: Optional[str] = None,
+        level: Optional[Union[int, None]] = None,
         experience: Union[int, None, Experience] = None,
-        wealth: int = 0,
-        strength: int = None,
-        dexterity: int = None,
-        constitution: int = None,
-        wisdom: int = None,
-        intelligence: int = None,
-        charisma: int = None,
-        max_hp: int = None,
-        current_hp: int = None,
-        temp_hp: int = None,
+        wealth: Optional[int] = 0,
+        strength: Optional[int] = None,
+        dexterity: Optional[int] = None,
+        constitution: Optional[int] = None,
+        wisdom: Optional[int] = None,
+        intelligence: Optional[int] = None,
+        charisma: Optional[int] = None,
+        max_hp: Optional[int] = None,
+        current_hp: Optional[int] = None,
+        temp_hp: Optional[int] = None,
         hd: int = 8,
-        max_hd: int = None,
-        current_hd: int = None,
-        proficiencies: dict = None,
-        saving_throws: list = None,
-        cantrips_known: dict = None,
-        spells_known: dict = None,
-        spells_prepared: list = None,
-        spell_slots: dict = None,
-        skills_strength: dict = None,
-        skills_dexterity: dict = None,
-        skills_wisdom: dict = None,
-        skills_intelligence: dict = None,
-        skills_charisma: dict = None,
-        inventory: list = None,
+        max_hd: Optional[int] = None,
+        current_hd: Optional[int] = None,
+        proficiencies: Optional[dict] = None,
+        saving_throws: Optional[list] = None,
+        cantrips_known: Optional[dict] = None,
+        spells_known: Optional[dict] = None,
+        spells_prepared: Optional[list] = None,
+        spell_slots: Optional[dict] = None,
+        skills_strength: Optional[dict] = None,
+        skills_dexterity: Optional[dict] = None,
+        skills_wisdom: Optional[dict] = None,
+        skills_intelligence: Optional[dict] = None,
+        skills_charisma: Optional[dict] = None,
+        inventory: Optional[list[dict]] = None,
         prof_bonus: int = 0,
         ability_score_bonus: int = 0,
-        class_features: dict = None,
-        class_spellcasting: dict = None,
-        class_features_enabled: list = None,
-        spellcasting_stat: str = None,
-        player_options: dict = None,
-        armor_class: int = None,
+        class_features: Optional[dict] = None,
+        class_spellcasting: Optional[dict] = None,
+        class_features_enabled: Optional[list] = None,
+        spellcasting_stat: Optional[str] = None,
+        player_options: Optional[dict] = None,
+        armor_class: Optional[int] = None,
         death_saves: int = 0,
         death_fails: int = 0,
         exhaustion: int = 0,
         dead: bool = False,
-        conditions: dict = None,
+        conditions: Optional[dict] = None,
     ):
         """
         Typical Arguments:
@@ -87,7 +86,7 @@ class Character:
                 gender       (str)
                 alignment    (str): two letter alignment (LE, TN, CN, LG, etc.)
                 description  (str): physical description of character
-                biography    (str): backstory of character
+                background   (str): one-word backstory of character (e.g. knight, chef)
                 level        (int): character's starting level
                 wealth       (int): character's starting wealth
                 strength     (int): character's starting strength
@@ -99,7 +98,9 @@ class Character:
         """
 
         # Decorative attrs that don't affect program logic
-        self.uid = UUID(uid) if uid is not None else uuid4()
+        self.uid: UUID = (
+            uuid4() if uid is None else uid if isinstance(uid, UUID) else UUID(uid)
+        )
         self.name = name
         self.age = age
         self.gender = gender
@@ -171,7 +172,8 @@ class Character:
         if level is not None:
             if self._experience.experience == 0:
                 # if only level is specified, set the experience to the amount for that level
-                self._experience.experience = experience_at_level(level)
+                self._experience._experience = experience_at_level(level)
+                self._experience.update_level()
                 # Experience alters self.level so it is now the correct value
             else:
                 # if level is specified AND experience is not zero:
@@ -236,8 +238,8 @@ class Character:
             self.skills_strength = skills_strength
 
         # Inventory & Wealth
-        self.wealth = wealth
-        self.inventory = []
+        self.wealth = wealth if wealth is not None else sum_rolls(d10=4)
+        self.inventory: list[dict] = []
         if inventory is not None:
             for item in inventory:
                 self.giveItem(item)
@@ -254,7 +256,7 @@ class Character:
         self._dead = dead
         self._death_saves = death_saves
         self._death_fails = death_fails
-        self.exhaustion = int(exhaustion)
+        self.exhaustion = exhaustion
 
         if self.level == level_at_experience(self._experience._experience):
             self.level = self._level
@@ -288,7 +290,7 @@ class Character:
             if condition not in conditions:
                 conditions[condition] = False
 
-    def __str__(self):
+    def __str__(self) -> str:
         return (
             f"Name: {self.name}\n"
             f"Background:\n{self.background}\n\n"
@@ -304,7 +306,7 @@ class Character:
             f"Class Features:\n{', '.join([item['name'] for item in self.class_features.values()])}\n\n"
         )
 
-    def keys(self):
+    def keys(self) -> list[str]:
         keys = [key for key in self.__dict__ if not key.startswith("_")]
         keys.extend(
             [
@@ -318,7 +320,7 @@ class Character:
         )
         return keys
 
-    def values(self):
+    def values(self) -> list[Union[dict, list, int, str, bool, None]]:
         vals = [
             value if key != "uid" else str(value)
             for key, value in self.__dict__.items()
@@ -336,25 +338,25 @@ class Character:
         )
         return vals
 
-    def __getitem__(self, key):
+    def __getitem__(self, key: str) -> Union[dict, list, int, str, None]:
         return dict(zip(self.keys(), self.values()))[key]
 
     @property
-    def dead(self):
+    def dead(self) -> bool:
         return self._dead
 
     @dead.setter
-    def dead(self, new_value: bool):
+    def dead(self, new_value: bool) -> None:
         self._dead = new_value
         self._death_saves = 0
         self._death_fails = 0
 
     @property
-    def death_saves(self):
+    def death_saves(self) -> int:
         return self._death_saves
 
     @death_saves.setter
-    def death_saves(self, new_value: int):
+    def death_saves(self, new_value: int) -> None:
         if not 4 > new_value > -1:
             raise ValueError("Death saving throws must be in range 0-3")
         elif new_value == 3:
@@ -365,11 +367,11 @@ class Character:
             self._death_saves = new_value
 
     @property
-    def death_fails(self):
+    def death_fails(self) -> int:
         return self._death_fails
 
     @death_fails.setter
-    def death_fails(self, new_value: int):
+    def death_fails(self, new_value: int) -> None:
         if not 4 > new_value > -1:
             raise ValueError("Death saving throws must be in range 0-3")
         elif new_value == 3:
@@ -380,11 +382,11 @@ class Character:
             self._death_fails = new_value
 
     @property
-    def current_hp(self):
+    def current_hp(self) -> int:
         return self._current_hp
 
     @current_hp.setter
-    def current_hp(self, new_value: int):
+    def current_hp(self, new_value: int) -> None:
         if new_value < 0:
             new_value = 0
         elif new_value > self.max_hp:
@@ -392,37 +394,37 @@ class Character:
         self._current_hp = new_value
 
     @property
-    def dexterity(self):
+    def dexterity(self) -> int:
         return self._dexterity
 
     @dexterity.setter
-    def dexterity(self, new_value):
+    def dexterity(self, new_value: int) -> None:
         self._dexterity = new_value
         self.armor_class = self.baseArmorClass
         for item in self.inventory:
             self.applyArmorClass(item)
 
     @property
-    def experience(self):
+    def experience(self) -> Experience:
         return self._experience.experience
 
     @experience.setter
-    def experience(self, new_val):
+    def experience(self, new_val: int) -> None:
         if new_val is None:
             pass
         elif type(new_val) is Experience:
             self._experience = new_val
         else:
-            self._experience.experience = new_val
+            self._experience._experience = new_val
+            self._experience.update_level()
 
     @property
-    def classs(self):
+    def classs(self) -> Optional[dict]:
         return self.__class
 
     @classs.setter
-    def classs(self, new_class):
+    def classs(self, new_class: Optional[dict]) -> None:
         self.__class = new_class
-
         if new_class is None:
             return
 
@@ -457,10 +459,10 @@ class Character:
 
         self.player_options["starting_equipment"] = []
 
-        def add_to_starting_options(choice: str):
+        def add_to_starting_options(choice: str) -> None:
             self.player_options["starting_equipment"].append(choice)
 
-        def fetch_choices_string(option):
+        def fetch_choices_string(option: dict) -> str:
             choices = SRD(option["equipment_category"]["url"])["equipment"]
             choices_names = [c["name"] for c in choices]
             return "{} (choice from {})".format(
@@ -507,7 +509,7 @@ class Character:
 
                 add_to_starting_options("choose from {}".format(", ".join(options)))
 
-    def applyClassLevel(self):
+    def applyClassLevel(self) -> None:
         if self.level > 20:
             return
         for data in self._class_levels:
@@ -524,11 +526,11 @@ class Character:
             self.class_spellcasting = data.get("spellcasting", self.class_spellcasting)
 
     @property
-    def level(self):
+    def level(self) -> int:
         return self._level
 
     @level.setter
-    def level(self, new_level):
+    def level(self, new_level: int) -> None:
         self._level = new_level
         if self.current_hp == self.max_hp:
             self.current_hp = Character.maximum_hp(
@@ -542,7 +544,7 @@ class Character:
             self.current_hd = self.max_hd
         self.applyClassLevel()
 
-    def removeShields(self):
+    def removeShields(self) -> None:
         """Removes all shields from self.inventory. Used by self.giveItem when equipping shield"""
         for i, item in enumerate(self.inventory):
             if (
@@ -551,7 +553,7 @@ class Character:
             ):
                 self.inventory.pop(i)
 
-    def removeArmor(self):
+    def removeArmor(self) -> None:
         """Removes all armor from self.inventory. Used by self.giveItem when equipping armor"""
         for i, item in enumerate(self.inventory):
             if (
@@ -560,7 +562,7 @@ class Character:
             ):
                 self.inventory.pop(i)
 
-    def applyArmorClass(self, item: dict):
+    def applyArmorClass(self, item: dict) -> None:
         if item["equipment_category"]["index"] == "armor":
             if item["armor_category"] == "Shield":
                 self.removeShields()
@@ -582,10 +584,10 @@ class Character:
                 )
 
     @property
-    def baseArmorClass(self):
+    def baseArmorClass(self) -> int:
         return 10 + Character.getModifier(self.dexterity)
 
-    def giveItem(self, item: dict):
+    def giveItem(self, item: dict) -> None:
         """
         Adds an item to the Character's inventory list, as a dictionary.
         If the item is armor or a shield, the armor_class attribute will be set
@@ -595,7 +597,7 @@ class Character:
 
         self.inventory.append(item)
 
-    def removeItem(self, item):
+    def removeItem(self, item: dict) -> None:
         if item["equipment_category"]["index"] == "armor":
             if item["armor_category"] == "Shield":
                 self.armor_class -= item["armor_class"]["base"]
@@ -615,7 +617,7 @@ class Character:
 
         self.inventory.remove(item)
 
-    def giveWealth(self, amount) -> None:
+    def giveWealth(self, amount: int) -> None:
         """
         Give wealth to character
         """

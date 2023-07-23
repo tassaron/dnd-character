@@ -24,33 +24,38 @@ class Experience:
         self.character.level = level_at_experience(experience)
 
     @property
-    def experience(self):
+    def experience(self) -> "Experience":
         return self
 
-    def __eq__(self, other):
-        return self._experience == other
-
     @experience.setter
-    def experience(self, new_val):
+    def experience(self, new_val: int) -> None:
         self._experience = new_val
+        self.update_level()
+
+    def update_level(self) -> None:
         self.character.level = level_at_experience(self._experience)
 
-    def __add__(self, new_val):
+    def __eq__(self, other: object) -> bool:
+        if isinstance(object, type(self)):
+            return self._experience == other._experience
+        return self._experience == other
+
+    def __add__(self, new_val: int) -> int:
         val = self._experience + int(new_val)
         return val if val >= 0 else 0
 
-    def __sub__(self, new_val):
+    def __sub__(self, new_val: int) -> int:
         val = self._experience - new_val
         return val if val >= 0 else 0
 
-    def __str__(self):
+    def __str__(self) -> str:
         return str(self._experience)
 
-    def __int__(self):
+    def __int__(self) -> int:
         return self._experience
 
     @property
-    def to_next_level(self):
+    def to_next_level(self) -> int:
         """
         Returns experience remaining until next level is reached
         """
@@ -66,7 +71,7 @@ class Experience:
             return 0
 
     @property
-    def to_last_level(self):
+    def to_last_level(self) -> int:
         """
         Returns experience remaining (to subtract) until previous level is reached
         """
@@ -80,7 +85,7 @@ class Experience:
 
 
 @lru_cache(maxsize=None)
-def level_at_experience(num):
+def level_at_experience(num: int) -> int:
     for level, threshold in enumerate(level_progression):
         if num >= threshold:
             continue
@@ -88,7 +93,7 @@ def level_at_experience(num):
     return 20
 
 
-def experience_at_level(num):
+def experience_at_level(num: int) -> int:
     return level_progression[num]
 
 
