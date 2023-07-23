@@ -287,7 +287,10 @@ class Character:
         if conditions is None:
             self.conditions = {k: False for k in all_conditions}
         else:
-            self.conditions = {k: conditions[k] if k in conditions.keys() else False for k in all_conditions}
+            self.conditions = {
+                k: conditions[k] if k in conditions.keys() else False
+                for k in all_conditions
+            }
 
     def __str__(self) -> str:
         return (
