@@ -285,10 +285,12 @@ class Character:
             "unconscious",
         ]
         if conditions is None:
-            conditions = {}
-        for condition in all_conditions:
-            if condition not in conditions:
-                conditions[condition] = False
+            self.conditions = {k: False for k in all_conditions}
+        else:
+            self.conditions = {
+                k: conditions[k] if k in conditions.keys() else False
+                for k in all_conditions
+            }
 
     def __str__(self) -> str:
         return (
