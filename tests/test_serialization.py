@@ -158,3 +158,10 @@ def test_serialization_of_class_levels():
     bard.classs = CLASSES["bard"]
     assert new_bard._class_levels == bard._class_levels
     assert new_bard.class_features == bard.class_features
+
+
+def test_frightened_condition_serializes():
+    bard = Bard(conditions={"frightened": True})
+    serialized_bard = dict(bard)
+    new_bard = Character(**serialized_bard)
+    assert new_bard.conditions["frightened"] is True
