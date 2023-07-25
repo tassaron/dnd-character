@@ -1,9 +1,9 @@
-from typing import Optional, Union, Any
+from typing import Optional, Union
 from uuid import uuid4, UUID
 import math
 import logging
 
-from .SRD import SRD, SRD_class_levels
+from .SRD import SRD, SRD_class_levels, JsonData
 from .experience import Experience, experience_at_level, level_at_experience
 from .dice import sum_rolls
 
@@ -22,8 +22,8 @@ class Character:
     def __init__(
         self,
         *,  # This * forces the caller to use keyword arguments
-        uid: Optional[UUID | str] = None,
-        classs: Optional[dict] = None,
+        uid: Optional[Union[UUID, str]] = None,
+        classs: Optional[JsonData] = None,
         class_name: Optional[str] = None,
         class_index: Optional[str] = None,
         name: Optional[str] = None,
@@ -38,7 +38,7 @@ class Character:
         ideals: Optional[str] = None,
         bonds: Optional[str] = None,
         flaws: Optional[str] = None,
-        level: Optional[Union[int, None]] = None,
+        level: Optional[int] = None,
         experience: Union[int, None, Experience] = None,
         wealth: Optional[int] = 0,
         strength: Optional[int] = None,
@@ -421,97 +421,117 @@ class Character:
             self._experience.update_level()
 
     @property
-    def classs(self) -> Optional[dict]:
+    def classs(self) -> Optional[JsonData]:
         return self.__class
 
     @classs.setter
-    def classs(self, new_class: Optional[dict]) -> None:
+    def classs(self, new_class: Optional[JsonData]) -> None:
+        """
+        Triggered when the character's class is changed
+        """
         self.__class = new_class
         if new_class is None:
             return
 
-        self.class_name = new_class["name"]
-        self.class_index = new_class["index"]
-        self.hd = new_class["hit_die"]
-        self._class_levels = SRD_class_levels[self.class_index]
-        if "spellcasting" in new_class:
-            self.spellcasting_stat = new_class["spellcasting"]["spellcasting_ability"][
-                "index"
-            ]
-        else:
-            self.spellcasting_stat = None
-        self.applyClassLevel()
-
-        # create dict such as { "all-armor": {"name": "All armor", "type": "Armor"} }
-        for proficiency in new_class["proficiencies"]:
-            data = SRD(proficiency["url"])
-            self.proficiencies[proficiency["index"]] = {
-                "name": data["name"],
-                "type": data["type"],
-            }
-
-        self.saving_throws = [
-            saving_throw["name"] for saving_throw in new_class["saving_throws"]
-        ]
-
-        starting_equipment = new_class["starting_equipment"]
-        for item in starting_equipment:
-            for i in range(item["quantity"]):
-                self.giveItem(SRD(item["equipment"]["url"]))
-
-        self.player_options["starting_equipment"] = []
-
-        def add_to_starting_options(choice: str) -> None:
-            self.player_options["starting_equipment"].append(choice)
-
-        def fetch_choices_string(option: dict) -> str:
-            choices = SRD(option["equipment_category"]["url"])["equipment"]
-            choices_names = [c["name"] for c in choices]
-            return "{} (choice from {})".format(
-                option["equipment_category"]["name"], ", ".join(choices_names)
-            )
-
-        for item_option in new_class["starting_equipment_options"]:
-            options = []
-            opts = item_option["from"]
-            if "options" not in opts.keys():
-                choices = fetch_choices_string(opts)
-                add_to_starting_options(choices)
-
+        def set_class():
+            """
+            Set miscellaneous class-related properties such as:
+            class name, hit dice, level progression data, proficiencies, saving throws,
+            spellcasting, and class features
+            """
+            self.class_name = new_class["name"]
+            self.class_index = new_class["index"]
+            self.hd = new_class["hit_die"]
+            self._class_levels = SRD_class_levels[self.class_index]
+            if "spellcasting" in new_class:
+                self.spellcasting_stat = new_class["spellcasting"][
+                    "spellcasting_ability"
+                ]["index"]
             else:
-                for opt in opts["options"]:
-                    opt_type = opt["option_type"]
-                    if opt_type == "counted_reference":
-                        options.append(
-                            "{} x {}".format(opt["count"], opt["of"]["name"])
-                        )
-                    elif opt_type == "choice":
-                        how_many = opt["choice"]["choose"]
-                        choices = fetch_choices_string(opt["choice"]["from"])
-                        options.append("{} x {}".format(how_many, choices))
-                    elif opt_type == "multiple":
-                        try:
-                            combo = [
-                                str(c["count"]) + " " + c["of"]["name"]
-                                for c in opt["items"]
-                            ]
-                            add_to_starting_options("{}".format(", ".join(combo)))
-                        except KeyError:
-                            # shield or martial weapon
-                            martial_weapons = fetch_choices_string(
-                                opt["items"][0]["choice"]["from"]
+                self.spellcasting_stat = None
+            self.apply_class_level()
+
+            # create dict such as { "all-armor": {"name": "All armor", "type": "Armor"} }
+            for proficiency in new_class["proficiencies"]:
+                data = SRD(proficiency["url"])
+                self.proficiencies[proficiency["index"]] = {
+                    "name": data["name"],
+                    "type": data["type"],
+                }
+
+            self.saving_throws = [
+                saving_throw["name"] for saving_throw in new_class["saving_throws"]
+            ]
+
+        def set_starting_equipment():
+            """
+            Sets `player_options["starting_equipment"]` to a list of strings
+            """
+            starting_equipment = new_class["starting_equipment"]
+            for item in starting_equipment:
+                for i in range(item["quantity"]):
+                    self.giveItem(SRD(item["equipment"]["url"]))
+
+            self.player_options["starting_equipment"] = []
+
+            def add_to_starting_options(choice: str) -> None:
+                self.player_options["starting_equipment"].append(choice)
+
+            def fetch_choices_string(option: dict[str, dict[str, str]]) -> str:
+                choices = SRD(option["equipment_category"]["url"])["equipment"]
+                choices_names = [c["name"] for c in choices]
+                return "{} (choice from {})".format(
+                    option["equipment_category"]["name"], ", ".join(choices_names)
+                )
+
+            for item_option in new_class["starting_equipment_options"]:
+                options = []
+                opts = item_option["from"]
+                if "options" not in opts.keys():
+                    choices = fetch_choices_string(opts)
+                    add_to_starting_options(choices)
+
+                else:
+                    for opt in opts["options"]:
+                        opt_type = opt["option_type"]
+                        if opt_type == "counted_reference":
+                            options.append(
+                                "{} x {}".format(opt["count"], opt["of"]["name"])
                             )
-                            shield = opt["items"][1]["of"]["name"]
-                            add_to_starting_options(
-                                "choose 1 from {} or a {}".format(
-                                    martial_weapons, shield
+                        elif opt_type == "choice":
+                            how_many = opt["choice"]["choose"]
+                            choices = fetch_choices_string(opt["choice"]["from"])
+                            options.append("{} x {}".format(how_many, choices))
+                        elif opt_type == "multiple":
+                            try:
+                                combo = [
+                                    str(c["count"]) + " " + c["of"]["name"]
+                                    for c in opt["items"]
+                                ]
+                                add_to_starting_options("{}".format(", ".join(combo)))
+                            except KeyError:
+                                # shield or martial weapon
+                                martial_weapons = fetch_choices_string(
+                                    opt["items"][0]["choice"]["from"]
                                 )
-                            )
-                            continue
+                                shield = opt["items"][1]["of"]["name"]
+                                add_to_starting_options(
+                                    "choose 1 from {} or a {}".format(
+                                        martial_weapons, shield
+                                    )
+                                )
+                                continue
 
-                add_to_starting_options("choose from {}".format(", ".join(options)))
+                    add_to_starting_options("choose from {}".format(", ".join(options)))
 
-    def applyClassLevel(self) -> None:
+        set_class()
+        set_starting_equipment()
+
+    def apply_class_level(self) -> None:
+        """
+        Applies changes based on the character's class and level
+        e.g., adds new class features
+        """
         if self.level > 20:
             return
         for data in self._class_levels:
@@ -544,7 +564,7 @@ class Character:
         self.max_hd = new_level
         if self.current_hd > self.max_hd:
             self.current_hd = self.max_hd
-        self.applyClassLevel()
+        self.apply_class_level()
 
     def removeShields(self) -> None:
         """Removes all shields from self.inventory. Used by self.giveItem when equipping shield"""

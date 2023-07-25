@@ -4,23 +4,10 @@ A cached function that gets SRD data from a DND 5e REST API
 import json
 from os import environ, walk, path, remove, mkdir
 import logging
-from typing import Callable, Optional
-
+from typing import Callable, TypeAlias, Union
 
 LOG = logging.getLogger(__package__)
 LOG.setLevel(logging.DEBUG)
-
-
-class DecoratedAPICallable:
-    """Type for decorated API call"""
-
-    def __init__(self, func: Callable[[str], dict]):
-        self.func = func
-        self.cache: dict[str, dict] = {}
-
-    def __call__(self, uri: str) -> dict:
-        return self.func(uri)
-
 
 try:
     JSON_CACHE = f"{path.dirname(path.abspath(__file__))}/json_cache"
@@ -31,11 +18,29 @@ except Exception as e:
     LOG.error(f"Entire JSON cache failed to load: {str(e)}")
 
 
-def cached_json(func: Callable[[str], dict]) -> Callable[[str], dict]:
+# Json Data is unstructured and could be recursively nested
+JsonValues: TypeAlias = Union[str, int, list["JsonValues"], dict[str, "JsonValues"]]
+JsonData: TypeAlias = dict[str, JsonValues]
+
+
+class DecoratedAPICallable:
     """
-    Decorator which caches REST HTTP-get requests into a dict
-    and saves them to JSON files so the cache can be reloaded.
-    This adds a new `cache` attribute to the decorated function
+    Instantiated by the @cached_json decorator to wrap API calls.
+    """
+
+    def __init__(self, func: Callable[[str], JsonData]):
+        self.func = func
+        self.cache: dict[str, JsonData] = {}
+
+    def __call__(self, uri: str) -> JsonData:
+        return self.func(uri)
+
+
+def cached_json(func: Callable[[str], JsonData]) -> Callable[[str], JsonData]:
+    """
+    This decorator returns a DecoratedAPICallable, which will return cached data
+    if it exists. If it does not exist, then it will send a GET request to the API
+    and try to save the response to a local JSON file to prevent future requests.
     """
     func = DecoratedAPICallable(func)
     for dirname, __, files in walk(JSON_CACHE):
@@ -50,8 +55,10 @@ def cached_json(func: Callable[[str], dict]) -> Callable[[str], dict]:
                 LOG.error(f"{fp} failed to load: {str(e)}")
                 remove(f"{dirname}/{fp}")
 
-    def outer_wrapper(func: DecoratedAPICallable) -> Callable[[str], dict]:
-        def inner_wrapper(uri: str) -> dict:
+    def outer_wrapper(
+        func: DecoratedAPICallable,
+    ) -> Callable[[str], JsonData]:
+        def inner_wrapper(uri: str) -> JsonData:
             try:
                 return func.cache[uri]
             except KeyError:
@@ -67,14 +74,14 @@ def cached_json(func: Callable[[str], dict]) -> Callable[[str], dict]:
     return outer_wrapper(func)
 
 
-def __SRD_API_CALL() -> Callable[[str], dict]:
+def __SRD_API_CALL() -> Callable[[str], JsonData]:
     """
     Closure for API calls
     """
     SRD_API = environ.get("SRD_API", "http://dnd5eapi.co")
 
     @cached_json
-    def get_from_SRD(uri: str) -> dict:
+    def get_from_SRD(uri: str) -> JsonData:
         import requests
 
         LOG.warning(f"Live API request! {str(uri)}")
