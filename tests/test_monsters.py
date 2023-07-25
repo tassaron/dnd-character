@@ -1,4 +1,4 @@
-from dnd_character.monsters import Monster
+from dnd_character.monsters import Monster, SRD_monsters
 
 
 def test_zombie():
@@ -23,3 +23,9 @@ def test_zombie():
     }
     serialized_zombie = dict(zombie)
     assert all([serialized_zombie[k] == v for k, v in expected_zombie.items()])
+
+
+def test_all_monsters():
+    """Constructs all 334 monsters from the SRD - how scary!"""
+    for monster in SRD_monsters:
+        assert Monster(monster).name == SRD_monsters[monster]["name"]

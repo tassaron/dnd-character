@@ -14,11 +14,14 @@ SRD_monsters = {
 class _Monster:
     index: str
     uid: str = uuid4().hex
+    type: str
+    subtype: Optional[str] = None
+    desc: Optional[str] = None
+    image: Optional[str] = None
+    images: Optional[str] = None
     url: str
     name: str
     size: str
-    type: str
-    subtype: Optional[str] = None
     alignment: str
     armor_class: list[dict[str, Union[str, int]]]
     hit_points: int
@@ -43,7 +46,8 @@ class _Monster:
     special_abilities: list[dict[str, str]]
     legendary_actions: list[dict[str, str]]
     actions: list[dict]
-    image: str
+    reactions: Optional[list[dict]] = None
+    forms: Optional[list[dict[str, str]]] = None
 
     def __iter__(self):
         me = asdict(self)
