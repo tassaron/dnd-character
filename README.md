@@ -72,20 +72,40 @@ sturm.give_item(dragonlance)
 pprint(sturm.player_options)
 ```
 
-
 ### Using Spells
-Support for spells is not super great at the moment. Characters have dictionaries like `spells_known` and `cantrips_known` in which you're expected to store dictionaries from `SRD_spells`... but there's no useful help from the library here. Yet!
+*Support for spellcasting is limited and subject to change in the future. Please provide feedback in [the issues](/issues).*
+
+Spells are represented by _SPELL objects from `dnd_character.spellcasting`. The best way to find spells is using the `spells_for_class_level` function.
 ```
-from dnd_character.spellcasting import SRD_spells, spells_for_class_level
-from pprint import pprint
+from dnd_character.spellcasting import spells_for_class_level
 cantrips = spells_for_class_level('wizard', 0)
-print(f"Cantrips available to a Wizard: {', '.join(cantrips)}")
+print(f"Cantrips available to a Wizard:")
 for spell in cantrips:
-    print(f"{SRD_spells[spell]['name']}:")
-    pprint(SRD_spells[spell])
-    break
+    print(spell)
 ```
 
+Characters have lists to store _SPELL objects:
+- `spells_prepared`
+- `spells_known`
+- `cantrips_known`
+
+Characters have a `spell_slots` dictionary which shows the **total** spell slots. Depletion and rest mechanics are planned for a future version.
+```
+from dnd_character import Wizard
+from dnd_character.spellcasting import SPELLS
+# Create wizard and teach Identify, a level 1 spell
+my_wizard = Wizard(name="Gormwinkle")
+my_wizard.spells_prepared.append(SPELLS["identify"])
+# Get total spell slots
+spell_slots_level_1 = my_wizard.spell_slots["spell_slots_level_1"]
+print(f"{my_wizard.name} has {spell_slots_level_1} spell slots of 1st level")
+# Cast until wizard runs out of spell slots
+while spell_slots_level_1 > 0:
+    print(f"Casting {SPELLS['identify'].name}!")
+    spell_slots_level_1 -= 1
+```
+
+There is currently no way to manage wizard spellbooks or class-specific features such as the Wizard's arcane recovery or the Sorcerer's metamagic.
 
 ## Character Object
 Normal initialization arguments for a Character object:
