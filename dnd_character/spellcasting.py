@@ -39,7 +39,9 @@ class _SPELL:
             yield k, v
 
 
-SPELLS = {index: _SPELL(**spell) for index, spell in SRD_spells.items()}
+SPELLS: dict[str, _SPELL] = {
+    index: _SPELL(**spell) for index, spell in SRD_spells.items()
+}
 
 
 spell_names_by_level = {

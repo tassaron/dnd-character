@@ -1,7 +1,7 @@
 from ast import literal_eval
 from dnd_character.character import Character
 from dnd_character.classes import Bard, Wizard, Ranger
-from dnd_character.spellcasting import spells_for_class_level, SPELLS
+from dnd_character.spellcasting import spells_for_class_level, SPELLS, _SPELL
 
 
 def test_cantrips_wizard():
@@ -75,6 +75,32 @@ def test_spell_slots_ranger():
 
 
 def test_spells_serialize():
+    for spell in SPELLS.values():
+        assert _SPELL(**literal_eval(str(dict(spell)))) == spell
+
+
+def test_cantrips_known_serializes_in_character():
     bard = Bard()
-    bard.spells_known += SPELLS["thunderwave"]
-    assert dict(Character(**literal_eval(str(dict(bard))))) == dict(bard)
+    bard.cantrips_known.append(SPELLS["thunderwave"])
+    assert (
+        bard.cantrips_known[0].index
+        == literal_eval(str(dict(bard)))["cantrips_known"][0]["index"]
+    )
+
+
+def test_spells_known_serializes_in_character():
+    bard = Bard()
+    bard.spells_known.append(SPELLS["thunderwave"])
+    assert (
+        bard.spells_known[0].index
+        == literal_eval(str(dict(bard)))["spells_known"][0]["index"]
+    )
+
+
+def test_spells_prepared_serializes_in_character():
+    wiz = Wizard()
+    wiz.spells_prepared.append(SPELLS["fireball"])
+    assert (
+        wiz.spells_prepared[0].index
+        == literal_eval(str(dict(wiz)))["spells_prepared"][0]["index"]
+    )

@@ -172,9 +172,15 @@ class Character:
         self.proficiencies = proficiencies if proficiencies is not None else {}
         self.saving_throws = saving_throws if saving_throws is not None else []
         self.spellcasting_stat = spellcasting_stat
-        self.cantrips_known = cantrips_known if cantrips_known is not None else []
-        self.spells_known = spells_known if spells_known is not None else []
-        self.spells_prepared = spells_prepared if spells_prepared is not None else []
+        self._cantrips_known: list["_SPELL"] = (
+            cantrips_known if cantrips_known is not None else []
+        )
+        self._spells_known: list["_SPELL"] = (
+            spells_known if spells_known is not None else []
+        )
+        self._spells_prepared: list["_SPELL"] = (
+            spells_prepared if spells_prepared is not None else []
+        )
         self.set_spell_slots(spell_slots)
 
         # Experience points
@@ -344,6 +350,9 @@ class Character:
                 "dead",
                 "current_hp",
                 "inventory",
+                "cantrips_known",
+                "spells_known",
+                "spells_prepared",
             ]
         )
         return keys
@@ -363,12 +372,39 @@ class Character:
                 self._dead,
                 self._current_hp,
                 [dict(item) for item in self._inventory],
+                [dict(spell) for spell in self._cantrips_known],
+                [dict(spell) for spell in self._spells_known],
+                [dict(spell) for spell in self._spells_prepared],
             ]
         )
         return vals
 
     def __getitem__(self, key: str) -> Union[dict, list, int, str, None]:
         return dict(zip(self.keys(), self.values()))[key]
+
+    @property
+    def cantrips_known(self) -> list["_SPELL"]:
+        return self._cantrips_known
+
+    @cantrips_known.setter
+    def cantrips_known(self, new_val) -> None:
+        self._cantrips_known = new_val
+
+    @property
+    def spells_known(self) -> list["_SPELL"]:
+        return self._spells_known
+
+    @spells_known.setter
+    def spells_known(self, new_val) -> None:
+        self._spells_known = new_val
+
+    @property
+    def spells_prepared(self) -> list["_SPELL"]:
+        return self._spells_prepared
+
+    @spells_prepared.setter
+    def spells_prepared(self, new_val) -> None:
+        self._spells_prepared = new_val
 
     @property
     def inventory(self) -> list[_Item]:
