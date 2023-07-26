@@ -1,5 +1,30 @@
-from .SRD import SRD_classes as CLASSES
+from typing import Optional
+from dataclasses import dataclass
+from .SRD import SRD_classes
 from .character import Character
+
+
+@dataclass(kw_only=True)
+class _CLASS:
+    index: str
+    name: str
+    url: str
+    hit_die: int
+    saving_throws: list[dict[str, str]]
+    class_levels: dict
+    subclasses: list[dict]
+    multi_classing: dict
+    proficiencies: list[dict[str, str]]
+    proficiency_choices: list[dict]
+    starting_equipment: list[dict]
+    starting_equipment_options: list[dict]
+    spellcasting: Optional[dict] = None
+    spells: Optional[str] = None
+
+
+CLASSES = {
+    class_index: _CLASS(**class_data) for class_index, class_data in SRD_classes.items()
+}
 
 
 def Barbarian(**kwargs) -> Character:

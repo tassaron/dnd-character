@@ -1,5 +1,4 @@
 from dnd_character import Character, Bard, CLASSES
-from dnd_character.SRD import SRD_classes
 from dnd_character.equipment import SRD_equipment
 from ast import literal_eval
 
@@ -24,13 +23,13 @@ def test_save_and_load_lvl3_character():
 
 
 def test_save_and_load_lvl1_bard():
-    player = Character(classs=SRD_classes["bard"])
+    player = Character(classs=CLASSES["bard"])
     clone = Character(**dict(player))
     assert dict(player) == dict(clone)
 
 
 def test_save_and_load_lvl3_bard():
-    player = Character(level=3, classs=SRD_classes["bard"])
+    player = Character(level=3, classs=CLASSES["bard"])
     clone = Character(**dict(player))
     assert dict(player) == dict(clone)
 
@@ -49,7 +48,7 @@ def test_save_and_load_experience():
 
 
 def test_save_and_load_leveled_up_character():
-    player = Character(classs=SRD_classes["bard"])
+    player = Character(classs=CLASSES["bard"])
     for i in range(900):
         player.experience += 1
     clone = Character(**dict(player))
@@ -103,17 +102,17 @@ def test_save_and_load_armor_class():
 
 
 def test_save_and_load_light_armor_class():
-    player = Character(classs=SRD_classes["bard"], dexterity=14)
+    player = Character(classs=CLASSES["bard"], dexterity=14)
     assert dict(Character(**dict(player))) == dict(player)
 
 
 def test_save_and_load_heavy_armor_class():
-    player = Character(classs=SRD_classes["paladin"], dexterity=14)
+    player = Character(classs=CLASSES["paladin"], dexterity=14)
     assert dict(Character(**dict(player))) == dict(player)
 
 
 def test_str_repr():
-    player = Character(classs=SRD_classes["fighter"])
+    player = Character(classs=CLASSES["fighter"])
     player.giveItem(SRD_equipment["flute"])
     player.experience += 50
     character_repr = str(player)

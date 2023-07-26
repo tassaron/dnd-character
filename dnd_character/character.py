@@ -1,9 +1,12 @@
-from typing import Optional, Union
+from typing import Optional, Union, TYPE_CHECKING
 from uuid import uuid4, UUID
 import math
 import logging
 
-from .SRD import SRD, SRD_class_levels, JsonData
+if TYPE_CHECKING:
+    from .classes import _CLASS
+
+from .SRD import SRD, SRD_class_levels
 from .experience import Experience, experience_at_level, level_at_experience
 from .dice import sum_rolls
 
@@ -29,7 +32,7 @@ class Character:
         self,
         *,  # This * forces the caller to use keyword arguments
         uid: Optional[Union[UUID, str]] = None,
-        classs: Optional[JsonData] = None,
+        classs: Optional["_CLASS"] = None,
         class_name: Optional[str] = None,
         class_index: Optional[str] = None,
         name: Optional[str] = None,
@@ -444,38 +447,45 @@ class Character:
             self._experience.update_level()
 
     @property
-    def classs(self) -> Optional[JsonData]:
+    def classs(self) -> Optional["_CLASS"]:
         return self.__class
 
     @classs.setter
-    def classs(self, new_class: Optional[JsonData]) -> None:
+    def classs(self, new_class: Optional["_CLASS"]) -> None:
         """
         Triggered when the character's class is changed
         """
+        if isinstance(new_class, dict):
+            # backwards compatibility
+            from .classes import CLASSES
+
+            LOG.warning("Implicitly converting classs dict to dataclass.")
+            new_class = CLASSES[new_class["index"]]
+
         self.__class = new_class
         if new_class is None:
             return
 
-        def set_class():
+        def set_class() -> None:
             """
             Set miscellaneous class-related properties such as:
             class name, hit dice, level progression data, proficiencies, saving throws,
             spellcasting, and class features
             """
-            self.class_name = new_class["name"]
-            self.class_index = new_class["index"]
-            self.hd = new_class["hit_die"]
+            self.class_name = new_class.name
+            self.class_index = new_class.index
+            self.hd = new_class.hit_die
             self._class_levels = SRD_class_levels[self.class_index]
-            if "spellcasting" in new_class:
-                self.spellcasting_stat = new_class["spellcasting"][
-                    "spellcasting_ability"
-                ]["index"]
+            if new_class.spellcasting:
+                self.spellcasting_stat = new_class.spellcasting["spellcasting_ability"][
+                    "index"
+                ]
             else:
                 self.spellcasting_stat = None
             self.apply_class_level()
 
             # create dict such as { "all-armor": {"name": "All armor", "type": "Armor"} }
-            for proficiency in new_class["proficiencies"]:
+            for proficiency in new_class.proficiencies:
                 data = SRD(proficiency["url"])
                 self.proficiencies[proficiency["index"]] = {
                     "name": data["name"],
@@ -483,14 +493,14 @@ class Character:
                 }
 
             self.saving_throws = [
-                saving_throw["name"] for saving_throw in new_class["saving_throws"]
+                saving_throw["name"] for saving_throw in new_class.saving_throws
             ]
 
-        def set_starting_equipment():
+        def set_starting_equipment() -> None:
             """
             Sets `player_options["starting_equipment"]` to a list of strings
             """
-            starting_equipment = new_class["starting_equipment"]
+            starting_equipment = new_class.starting_equipment
             for item in starting_equipment:
                 for i in range(item["quantity"]):
                     self.giveItem(SRD(item["equipment"]["url"]))
@@ -507,7 +517,7 @@ class Character:
                     option["equipment_category"]["name"], ", ".join(choices_names)
                 )
 
-            for item_option in new_class["starting_equipment_options"]:
+            for item_option in new_class.starting_equipment_options:
                 options = []
                 opts = item_option["from"]
                 if "options" not in opts.keys():
