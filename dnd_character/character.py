@@ -701,7 +701,7 @@ class Character:
                 new_value = self.wealth_detailed[unit] + value
                 if new_value < 0:
                     raise ValueError(
-                        f"Character has not enough {k}! Current balance: {self.wealth_detailed[unit]}"
+                        f"Character has not enough {unit}! Current balance: {self.wealth_detailed[unit]}"
                     )
                 else:
                     self.wealth_detailed[unit] = new_value
