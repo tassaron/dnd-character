@@ -52,6 +52,11 @@ class _Item:
     capacity: Optional[str] = None
     speed: Optional[dict[str, Union[str, int]]] = None
 
+    def __iter__(self):
+        me = asdict(self)
+        for k, v in me.items():
+            yield k, v
+
 
 def Item(index: str) -> _Item:
     return _Item(**SRD_equipment[index])
