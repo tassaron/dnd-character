@@ -5,6 +5,7 @@ import logging
 
 if TYPE_CHECKING:
     from .classes import _CLASS
+    from .spellcasting import _SPELL
 
 from .SRD import SRD, SRD_class_levels
 from .equipment import _Item, Item
@@ -66,9 +67,9 @@ class Character:
         current_hd: Optional[int] = None,
         proficiencies: Optional[dict] = None,
         saving_throws: Optional[list] = None,
-        cantrips_known: Optional[dict] = None,
-        spells_known: Optional[dict] = None,
-        spells_prepared: Optional[list] = None,
+        cantrips_known: Optional[list["_SPELL"]] = None,
+        spells_known: Optional[list["_SPELL"]] = None,
+        spells_prepared: Optional[list["_SPELL"]] = None,
         spell_slots: Optional[dict[str, int]] = None,
         skills_strength: Optional[dict] = None,
         skills_dexterity: Optional[dict] = None,
@@ -170,26 +171,11 @@ class Character:
         # Spells, Skills, Proficiencies
         self.proficiencies = proficiencies if proficiencies is not None else {}
         self.saving_throws = saving_throws if saving_throws is not None else []
-        self.cantrips_known = cantrips_known
-        self.spells_known = spells_known
-        self.spells_prepared = spells_prepared
-        self.spell_slots = (
-            spell_slots
-            if spell_slots is not None
-            else {
-                "cantrips_known": 0,
-                "spell_slots_level_1": 0,
-                "spell_slots_level_2": 0,
-                "spell_slots_level_3": 0,
-                "spell_slots_level_4": 0,
-                "spell_slots_level_5": 0,
-                "spell_slots_level_6": 0,
-                "spell_slots_level_7": 0,
-                "spell_slots_level_8": 0,
-                "spell_slots_level_9": 0,
-            }
-        )
         self.spellcasting_stat = spellcasting_stat
+        self.cantrips_known = cantrips_known if cantrips_known is not None else []
+        self.spells_known = spells_known if spells_known is not None else []
+        self.spells_prepared = spells_prepared if spells_prepared is not None else []
+        self.set_spell_slots(spell_slots)
 
         # Experience points
         self._level = 1
@@ -600,7 +586,27 @@ class Character:
                 self.class_features_enabled.append(True)
 
             # Fetch new spell slots
-            self.spell_slots = data.get("spellcasting", self.spell_slots)
+            spell_slots = data.get("spellcasting", self.spell_slots)
+            self.set_spell_slots(spell_slots)
+
+    def set_spell_slots(self, new_spell_slots: dict[str, int]) -> dict[str, int]:
+        default_spell_slots = {
+            "cantrips_known": 0,
+            "spells_known": 0,
+            "spell_slots_level_1": 0,
+            "spell_slots_level_2": 0,
+            "spell_slots_level_3": 0,
+            "spell_slots_level_4": 0,
+            "spell_slots_level_5": 0,
+            "spell_slots_level_6": 0,
+            "spell_slots_level_7": 0,
+            "spell_slots_level_8": 0,
+            "spell_slots_level_9": 0,
+        }
+        self.spell_slots = new_spell_slots if new_spell_slots is not None else {}
+        for key in default_spell_slots:
+            if key not in self.spell_slots:
+                self.spell_slots[key] = default_spell_slots[key]
 
     @property
     def level(self) -> int:
