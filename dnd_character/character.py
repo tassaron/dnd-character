@@ -687,6 +687,7 @@ class Character:
     ):
         change = locals()
         change.pop("self", None)
+        change.pop("conversion", None)
 
         if conversion:
             total_change = sum([coin_value[u] * v for u, v in change.items()])
