@@ -69,7 +69,7 @@ class Character:
         cantrips_known: Optional[dict] = None,
         spells_known: Optional[dict] = None,
         spells_prepared: Optional[list] = None,
-        spell_slots: Optional[dict] = None,
+        spell_slots: Optional[dict[str, int]] = None,
         skills_strength: Optional[dict] = None,
         skills_dexterity: Optional[dict] = None,
         skills_wisdom: Optional[dict] = None,
@@ -79,7 +79,6 @@ class Character:
         prof_bonus: int = 0,
         ability_score_bonus: int = 0,
         class_features: Optional[dict] = None,
-        class_spellcasting: Optional[dict] = None,
         class_features_enabled: Optional[list] = None,
         spellcasting_stat: Optional[str] = None,
         player_options: Optional[dict] = None,
@@ -145,9 +144,6 @@ class Character:
         self.class_features_enabled = (
             class_features_enabled if class_features_enabled is not None else []
         )
-        self.class_spellcasting = (
-            class_spellcasting if class_spellcasting is not None else {}
-        )
 
         # Ability Scores
         self.strength = self.setInitialAbilityScore(strength)
@@ -170,6 +166,30 @@ class Character:
         )
         self._current_hp = current_hp if current_hp is not None else int(self.max_hp)
         self.temp_hp = 0 if temp_hp is None else int(temp_hp)
+
+        # Spells, Skills, Proficiencies
+        self.proficiencies = proficiencies if proficiencies is not None else {}
+        self.saving_throws = saving_throws if saving_throws is not None else []
+        self.cantrips_known = cantrips_known
+        self.spells_known = spells_known
+        self.spells_prepared = spells_prepared
+        self.spell_slots = (
+            spell_slots
+            if spell_slots is not None
+            else {
+                "cantrips_known": 0,
+                "spell_slots_level_1": 0,
+                "spell_slots_level_2": 0,
+                "spell_slots_level_3": 0,
+                "spell_slots_level_4": 0,
+                "spell_slots_level_5": 0,
+                "spell_slots_level_6": 0,
+                "spell_slots_level_7": 0,
+                "spell_slots_level_8": 0,
+                "spell_slots_level_9": 0,
+            }
+        )
+        self.spellcasting_stat = spellcasting_stat
 
         # Experience points
         self._level = 1
@@ -194,15 +214,6 @@ class Character:
                     f"Custom level for {str(self.name)}: {str(level)} instead of {str(self.level)}"
                 )
                 self._level = level
-
-        # Spells, Skills, Proficiencies
-        self.proficiencies = proficiencies if proficiencies is not None else {}
-        self.saving_throws = saving_throws if saving_throws is not None else []
-        self.cantrips_known = cantrips_known
-        self.spells_known = spells_known
-        self.spells_prepared = spells_prepared
-        self.spell_slots = spell_slots
-        self.spellcasting_stat = spellcasting_stat
 
         if skills_charisma is None:
             self.skills_charisma = {
@@ -571,7 +582,8 @@ class Character:
     def apply_class_level(self) -> None:
         """
         Applies changes based on the character's class and level
-        e.g., adds new class features
+        e.g., adds new class features, spell slots
+        Called by `level.setter` and `classs.setter`
         """
         if self.level > 20:
             return
@@ -586,7 +598,9 @@ class Character:
                 self.class_features[feat["index"]] = SRD(feat["url"])
             while len(self.class_features_enabled) < len(self.class_features):
                 self.class_features_enabled.append(True)
-            self.class_spellcasting = data.get("spellcasting", self.class_spellcasting)
+
+            # Fetch new spell slots
+            self.spell_slots = data.get("spellcasting", self.spell_slots)
 
     @property
     def level(self) -> int:
