@@ -7,8 +7,8 @@ from .character import Character  # noqa: F401, F405 (ignore unused import)
 from .classes import *  # noqa: F401, F403 (ignore star import)
 
 __author__ = "Brianna Rainey"
-__copyright__ = "Copyright 2019-2023 Brianna Rainey & Markis Cook"
-__credits__ = ["Brianna Rainey (Current Programmer)", "Markis Cook (Original Creator)"]
+__copyright__ = "Copyright 2023 Brianna Rainey"
+__credits__ = ["Brianna Rainey", "Gergő", "Markis Cook", "Tim Van Rillaer"]
 __license__ = "EPL-2.0"
-__version__ = "23.07.22"
+__version__ = "23.07.28"
 __maintainer__ = "Brianna Rainey"
