@@ -1,5 +1,6 @@
 from typing import Union, Optional
 from dataclasses import dataclass, asdict
+from uuid import uuid4
 from .SRD import SRD_endpoints, SRD
 
 
@@ -11,6 +12,7 @@ SRD_equipment = {
 
 @dataclass(kw_only=True)
 class _Item:
+    uid: str = uuid4().hex
     contents: list[dict[str, Union[int, dict[str, str]]]]
     cost: dict[str, Union[str, int]]
     desc: list[str]
