@@ -10,6 +10,12 @@ from .dice import sum_rolls
 
 LOG = logging.getLogger(__package__)
 
+coin_value = {"pp": 10, "gp": 1, "ep": 0.5, "sp": 0.1, "cp": 0.01}
+
+
+class InvalidParameterError(Exception):
+    pass
+
 
 class Character:
     """
@@ -40,7 +46,8 @@ class Character:
         flaws: Optional[str] = None,
         level: Optional[int] = None,
         experience: Union[int, None, Experience] = None,
-        wealth: Optional[int] = 0,
+        wealth: Optional[Union[int, float]] = None,
+        wealth_detailed: Optional[dict] = None,
         strength: Optional[int] = None,
         dexterity: Optional[int] = None,
         constitution: Optional[int] = None,
@@ -238,7 +245,17 @@ class Character:
             self.skills_strength = skills_strength
 
         # Inventory & Wealth
-        self.wealth = wealth if wealth is not None else sum_rolls(d10=4)
+        if wealth_detailed is None:
+            self.wealth = sum_rolls(d10=4) if wealth is None else wealth
+            self.wealth_detailed = self.infer_wealth(self.wealth)
+        else:
+            if wealth is None:
+                self.wealth_detailed = self.change_wealth(**wealth_detailed)
+            else:
+                raise InvalidParameterError(
+                    "Both 'wealth' and 'wealth_detailed' parameters are provided. Only one should be used."
+                )
+
         self.inventory: list[dict] = []
         if inventory is not None:
             for item in inventory:
@@ -639,22 +656,55 @@ class Character:
 
         self.inventory.remove(item)
 
-    def giveWealth(self, amount: int) -> None:
-        """
-        Give wealth to character
-        """
-        self.wealth += amount
-
-    def removeWealth(self, amount: int) -> bool:
-        """
-        Remove wealth from character if possible. Returns bool to indicate success or failure.
-        If wealth < amount then wealth remains unchanged, otherwise this character loses wealth
-        """
-        if amount > self.wealth:
-            return False
+    @staticmethod
+    def infer_wealth(wealth: Union[int, float]):
+        """Estimates a reasonable coin distribution from gold denominated total wealth."""
+        # Convert to platinum for smaller weight/volume
+        if wealth > 100:
+            pp = int((wealth - 100) / 10)
+            gp = wealth - 10 * pp
         else:
-            self.wealth -= amount
-            return True
+            pp = 0
+            gp = wealth
+
+        # Convert fractional part to silver and copper (no electrum!)
+        gp_str = "{:.2f}".format(gp)  # two decimal rounded gp to two decimal string
+        gp_str_decimal = gp_str.split(".")[1]
+        sp = int(gp_str_decimal[0])
+        cp = int(gp_str_decimal[1])
+        gp = int(gp)
+
+        return {"pp": pp, "gp": gp, "ep": 0, "sp": sp, "cp": cp}
+
+    def change_wealth(
+        self,
+        pp: int = 0,
+        gp: int = 0,
+        ep: int = 0,
+        sp: int = 0,
+        cp: int = 0,
+        conversion: bool = False,
+    ):
+        change = locals()
+        change.pop("self", None)
+
+        if conversion:
+            total_change = sum([coin_value[u] * v for u, v in change.items()])
+            new_wealth = round(self.wealth + total_change, 2)
+            if new_wealth < 0:
+                raise ValueError("Character has not enough wealth to cover the change!")
+
+            self.wealth = new_wealth
+            self.wealth_detailed = infer_wealth(self.wealth)
+        else:
+            for unit, value in change.items():
+                new_value = self.wealth_detailed[unit] + value
+                if new_value < 0:
+                    raise ValueError(
+                        f"Character has not enough {k}! Current balance: {self.wealth_detailed[unit]}"
+                    )
+                else:
+                    self.wealth_detailed[unit] = new_value
 
     @staticmethod
     def setInitialAbilityScore(stat: Optional[int]) -> int:
