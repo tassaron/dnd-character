@@ -4,7 +4,7 @@ from .SRD import SRD_classes
 from .character import Character
 
 
-@dataclass(kw_only=True)
+@dataclass(kw_only=True, frozen=True, slots=True)
 class _CLASS:
     index: str
     name: str
