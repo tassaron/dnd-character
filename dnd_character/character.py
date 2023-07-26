@@ -695,7 +695,7 @@ class Character:
                 raise ValueError("Character has not enough wealth to cover the change!")
 
             self.wealth = new_wealth
-            self.wealth_detailed = infer_wealth(self.wealth)
+            self.wealth_detailed = self.infer_wealth(self.wealth)
         else:
             for unit, value in change.items():
                 new_value = self.wealth_detailed[unit] + value
