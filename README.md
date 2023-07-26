@@ -19,21 +19,21 @@ The software is EPL-2.0 and the text for this license is in `LICENSE` as is stan
 ## Example Code
 
 ### Creating Characters and Monsters
-The `classes` module has functions for creating all 12 classes from the System Reference Document. The `monsters` module has a dictionary of monsters, which are dictionaries themselves.
+The `classes` module has functions for creating all 12 classes from the System Reference Document. The `monsters` module has a factory function for creating monsters.
 ```
 from dnd_character.classes import Bard
-from dnd_character.monsters import SRD_monsters
+from dnd_character.monsters import Monster
 from random import randint
 
 brianna = Bard(
     name="Brianna",
     level=10,
     )
-zombie = SRD_monsters["zombie"]
-attack_bonus = zombie["actions"][0]["attack_bonus"]
+zombie = Monster("zombie")
+attack_bonus = zombie.actions[0]["attack_bonus"]
 # Zombie rolls a d20 to attack a Bard
 if randint(1, 20) + attack_bonus >= brianna.armor_class:
-    print(f"{brianna.name} was hit by {zombie['name']}!")
+    print(f"{brianna.name} was hit by {zombie.name}!")
 else:
     print(f"{brianna.name} bravely dodged the attack")
 ```
@@ -41,7 +41,7 @@ else:
 ### Leveling and Experience
 The library should help leveling up characters automatically if you manage the Character's `experience` attribute. It's simpler to avoid modifying the level directly.
 ```
-import dnd_character
+from dnd_character import Character
 thor = Character(name="Thor")
 assert thor.level == 1
 thor.experience += 1000
@@ -55,18 +55,19 @@ assert thor.level == 4
 Characters initialized with a class will have the starting equipment of that class, and an attribute called `player_options` which lists the optional starting equipment.
 ```
 from dnd_character.classes import Paladin
+from dnd_character.equipment import Item
 from pprint import pprint
 sturm = Paladin(dexterity=10)
 pprint(sturm.inventory)
 print(sturm.armor_class)
 # Remove Chain Mail
-sturm.removeItem(sturm.inventory[0])
+sturm.remove_item(sturm.inventory[0])
 print(sturm.armor_class)
 # New Item
 from dnd_character.equipment import SRD_equipment
-dragonlance = SRD_equipment['lance']
-dragonlance["name"] = "Dragonlance®"
-sturm.giveItem(dragonlance)
+dragonlance = Item('lance')
+dragonlance.name = "Dragonlance®"
+sturm.give_item(dragonlance)
 # View optional starting equipment
 pprint(sturm.player_options)
 ```
@@ -94,7 +95,7 @@ age          (str)
 gender       (str)
 alignment    (str): character's two letter alignment
 description  (str): physical description of player character
-biography    (str): backstory of player character	
+background   (str): one-word backstory (e.g., knight, chef)
 level        (int): starting level
 wealth       (int): starting wealth	
 strength     (int)
@@ -104,7 +105,7 @@ wisdom       (int)
 intelligence (int)
 charisma     (int)
 hp           (int):
-classs      (dict): JSON returned from the 5e API -- dnd_character.SRD.SRD_classes["bard"]
+classs    (_CLASS): dataclass based on JSON returned from the 5e API (e.g., CLASSES['bard'])
 ```
 In addition, the Character object can receive attributes that are normally set automatically, such as the UUID. This is for re-loading the objects from serialized data (via `Character(**characterData)`) and probably aren't arguments you would write manually into your code.
 
