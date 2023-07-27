@@ -43,26 +43,34 @@ def test_wealth_calculated_from_detailed(wealth_detailed, expected_value):
 
 def test_character_increase_wealth_no_conversion():
     c = Character(wealth_detailed={"pp": 0, "gp": 1, "ep": 0, "sp": 1, "cp": 1})
+    assert c.wealth == 1.11
     c.change_wealth(sp=10, conversion=False)
     assert c.wealth_detailed == {"pp": 0, "gp": 1, "ep": 0, "sp": 11, "cp": 1}
+    assert c.wealth == 2.11
 
 
 def test_character_increase_wealth_conversion():
     c = Character(wealth_detailed={"pp": 0, "gp": 1, "ep": 0, "sp": 1, "cp": 1})
+    assert c.wealth == 1.11
     c.change_wealth(sp=10, conversion=True)
     assert c.wealth_detailed == {"pp": 0, "gp": 2, "ep": 0, "sp": 1, "cp": 1}
+    assert c.wealth == 2.11
 
 
 def test_character_decrease_wealth_no_conversion():
     c = Character(wealth_detailed={"pp": 0, "gp": 1, "ep": 0, "sp": 11, "cp": 1})
+    assert c.wealth == 2.11
     c.change_wealth(pp=0, gp=-1, ep=0, sp=0, cp=0, conversion=False)
     assert c.wealth_detailed == {"pp": 0, "gp": 0, "ep": 0, "sp": 11, "cp": 1}
+    assert c.wealth == 1.11
 
 
 def test_character_decrease_wealth_conversion():
     c = Character(wealth_detailed={"pp": 0, "gp": 1, "ep": 0, "sp": 11, "cp": 1})
+    assert c.wealth == 2.11
     c.change_wealth(pp=0, gp=0, ep=0, sp=-20, cp=0, conversion=True)
     assert c.wealth_detailed == {"pp": 0, "gp": 0, "ep": 0, "sp": 1, "cp": 1}
+    assert c.wealth == 0.11
 
 
 def test_character_decrease_wealth_failure_no_conversion():
