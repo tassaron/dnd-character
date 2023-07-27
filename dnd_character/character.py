@@ -250,7 +250,8 @@ class Character:
             self.wealth_detailed = self.infer_wealth(self.wealth)
         else:
             if wealth is None:
-                self.wealth_detailed = self.change_wealth(**wealth_detailed)
+                self.wealth_detailed = wealth_detailed
+                self.wealth = sum([coin_value[u] * v for u, v in self.wealth_detailed.items()])
             else:
                 raise InvalidParameterError(
                     "Both 'wealth' and 'wealth_detailed' parameters are provided. Only one should be used."

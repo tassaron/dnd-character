@@ -24,8 +24,8 @@ def test_character_init_wealth_mismatched_error():
 @pytest.mark.parametrize(
     ("wealth_detailed", "expected_value"),
     (
-        ({"pp": 0, "gp": 1, "ep": 0, "sp": 1, "cp": 1}, 2.11),
-        ({"pp": 0, "gp": 1, "ep": 0, "sp": 11, "cp": 1}, 1.12),
+        ({"pp": 0, "gp": 1, "ep": 0, "sp": 1, "cp": 1}, 1.11),
+        ({"pp": 0, "gp": 1, "ep": 0, "sp": 11, "cp": 1}, 2.11),
         ({"pp": 1, "gp": 0, "ep": 3, "sp": 0, "cp": 100}, 12.5),
         ({"pp": 0, "gp": 31, "ep": 0, "sp": 10, "cp": 9}, 32.09),
     ),
