@@ -245,17 +245,22 @@ class Character:
             self.skills_strength = skills_strength
 
         # Inventory & Wealth
+        final_wealth = None
         if wealth_detailed is None:
-            self.wealth = sum_rolls(d10=4) if wealth is None else wealth
-            self.wealth_detailed = self.infer_wealth(self.wealth)
+            final_wealth = sum_rolls(d10=4) if wealth is None else wealth
+            self.wealth_detailed = self.infer_wealth(final_wealth)
         else:
-            if wealth is None:
-                self.wealth_detailed = wealth_detailed
-                self.wealth = sum([coin_value[u] * v for u, v in self.wealth_detailed.items()])
-            else:
-                raise InvalidParameterError(
-                    "Both 'wealth' and 'wealth_detailed' parameters are provided. Only one should be used."
-                )
+            self.wealth_detailed = wealth_detailed
+            final_wealth = sum(
+                [coin_value[u] * v for u, v in self.wealth_detailed.items()]
+            )
+
+        # if both wealth parameters provided
+        if wealth is not None and float(wealth) != final_wealth:
+            raise InvalidParameterError(
+                "Both 'wealth' and 'wealth_detailed' parameters are provided, but 'wealth' seems incorrect."
+            )
+        self.wealth = final_wealth
 
         self.inventory: list[dict] = []
         if inventory is not None:

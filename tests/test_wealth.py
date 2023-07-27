@@ -12,11 +12,17 @@ def test_character_init_wealth_detailed():
     assert c.wealth == 100.0
 
 
+def test_character_init_wealth_matches_no_error():
+    assert Character(
+        wealth=100.0, wealth_detailed={"pp": 0, "gp": 100, "ep": 0, "sp": 0, "cp": 0}
+    )
+
+
 def test_character_init_wealth_mismatched_error():
     # Will fail if this exception is not raised
     with pytest.raises(InvalidParameterError):
         c = Character(
-            wealth=10, wealth_detailed={"pp": 0, "gp": 100, "ep": 0, "sp": 0, "cp": 0}
+            wealth=10.0, wealth_detailed={"pp": 0, "gp": 100, "ep": 0, "sp": 0, "cp": 0}
         )
 
 
