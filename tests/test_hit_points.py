@@ -3,7 +3,7 @@ from dnd_character.classes import Barbarian
 
 
 def test_maximum_hp_function():
-    assert Character.maximum_hp(12, 11, 10) == 82
+    assert Character.get_maximum_hp(12, 11, 10) == 82
 
 
 def test_level_one_max_hp():

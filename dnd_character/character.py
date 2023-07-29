@@ -1,6 +1,5 @@
 from typing import Optional, Union, TYPE_CHECKING
 from uuid import uuid4, UUID
-import math
 import logging
 
 if TYPE_CHECKING:
@@ -147,19 +146,19 @@ class Character:
         )
 
         # Ability Scores
-        self.strength = self.setInitialAbilityScore(strength)
-        self._dexterity = self.setInitialAbilityScore(dexterity)
-        self.constitution = self.setInitialAbilityScore(constitution)
-        self.wisdom = self.setInitialAbilityScore(wisdom)
-        self.intelligence = self.setInitialAbilityScore(intelligence)
-        self.charisma = self.setInitialAbilityScore(charisma)
+        self.strength = self.set_initial_ability_score(strength)
+        self._dexterity = self.set_initial_ability_score(dexterity)
+        self.constitution = self.set_initial_ability_score(constitution)
+        self.wisdom = self.set_initial_ability_score(wisdom)
+        self.intelligence = self.set_initial_ability_score(intelligence)
+        self.charisma = self.set_initial_ability_score(charisma)
 
         # Hit Dice and Hit Points: self.hd == 8 is a d8, 10 is a d10, etc
         self.hd = 8 if hd is None else hd
         self.max_hd = 1 if max_hd is None else max_hd
         self.current_hd = 1 if current_hd is None else current_hd
         self.max_hp = (
-            Character.maximum_hp(
+            Character.get_maximum_hp(
                 self.hd, 1 if level is None else int(level), self.constitution
             )
             if max_hp is None
@@ -254,7 +253,7 @@ class Character:
         # Inventory & Wealth
         final_wealth = None
         if wealth_detailed is None:
-            final_wealth = sum_rolls(d10=4) if wealth is None else wealth
+            final_wealth = float(sum_rolls(d10=4)) if wealth is None else wealth
             self.wealth_detailed = self.infer_wealth(final_wealth)
         else:
             self.wealth_detailed = wealth_detailed
@@ -294,7 +293,7 @@ class Character:
             if current_hp is None:
                 # Set character's HP to the maximum for their level,
                 # only if the level isn't custom! (if it matches experience points according to SRD)
-                self.current_hp = Character.maximum_hp(
+                self.current_hp = Character.get_maximum_hp(
                     self.hd, self.level, self.constitution
                 )
 
@@ -704,7 +703,7 @@ class Character:
 
     @property
     def base_armor_class(self) -> int:
-        return 10 + Character.getModifier(self.dexterity)
+        return 10 + Character.get_ability_modifier(self.dexterity)
 
     def give_item(self, item: _Item) -> None:
         """
@@ -734,26 +733,6 @@ class Character:
                 )
 
         self._inventory.remove(item)
-
-    @staticmethod
-    def infer_wealth(wealth: Union[int, float]) -> dict[str, int]:
-        """Estimates a reasonable coin distribution from gold denominated total wealth."""
-        # Convert to platinum for smaller weight/volume
-        if wealth > 100:
-            pp = int((wealth - 100) / 10)
-            gp = wealth - 10 * pp
-        else:
-            pp = 0
-            gp = wealth
-
-        # Convert fractional part to silver and copper (no electrum!)
-        gp_str = "{:.2f}".format(gp)  # two decimal rounded gp to two decimal string
-        gp_str_decimal = gp_str.split(".")[1]
-        sp = int(gp_str_decimal[0])
-        cp = int(gp_str_decimal[1])
-        gp = int(gp)
-
-        return {"pp": pp, "gp": gp, "ep": 0, "sp": sp, "cp": cp}
 
     def change_wealth(
         self,
@@ -787,7 +766,27 @@ class Character:
         self.wealth = new_wealth
 
     @staticmethod
-    def setInitialAbilityScore(stat: Optional[int]) -> int:
+    def infer_wealth(wealth: Union[int, float]) -> dict[str, int]:
+        """Estimates a reasonable coin distribution from gold denominated total wealth."""
+        # Convert to platinum for smaller weight/volume
+        if wealth > 100:
+            pp = int((wealth - 100) / 10)
+            gp = wealth - 10 * pp
+        else:
+            pp = 0
+            gp = wealth
+
+        # Convert fractional part to silver and copper (no electrum!)
+        gp_str = "{:.2f}".format(gp)  # two decimal rounded gp to two decimal string
+        gp_str_decimal = gp_str.split(".")[1]
+        sp = int(gp_str_decimal[0])
+        cp = int(gp_str_decimal[1])
+        gp = int(gp)
+
+        return {"pp": pp, "gp": gp, "ep": 0, "sp": sp, "cp": cp}
+
+    @staticmethod
+    def set_initial_ability_score(stat: Optional[int]) -> int:
         """
         Set ability score to an int. If the argument is None, then this method
         instead rolls for the initial starting ability score.
@@ -798,16 +797,20 @@ class Character:
             return int(stat)
 
     @staticmethod
-    def getModifier(number: int) -> int:
+    def get_ability_modifier(number: int) -> int:
         """
         This method returns the modifier for the given stat (INT, CON, etc.)
         The formula for this is (STAT - 10 / 2) so e.g. 14 results in 2
         """
-        return math.floor((number - 10) / 2)
+        return (number - 10) // 2
 
-    @classmethod
-    def maximum_hp(cls, hd: int, level: int, constitution: int) -> int:
+    @staticmethod
+    def get_maximum_hp(hd: int, level: int, constitution: int) -> int:
         """
         Calculate maximum hitpoints using hit dice (HD), level and constitution modifier
         """
-        return hd + ((int(hd / 2) + 1) * (level - 1)) + cls.getModifier(constitution)
+        return (
+            hd
+            + ((int(hd / 2) + 1) * (level - 1))
+            + Character.get_ability_modifier(constitution)
+        )
