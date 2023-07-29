@@ -1,6 +1,5 @@
 from dnd_character import Character, Bard, CLASSES
-from dnd_character.SRD import SRD_classes
-from dnd_character.equipment import SRD_equipment
+from dnd_character.equipment import Item
 from ast import literal_eval
 
 
@@ -24,13 +23,13 @@ def test_save_and_load_lvl3_character():
 
 
 def test_save_and_load_lvl1_bard():
-    player = Character(classs=SRD_classes["bard"])
+    player = Character(classs=CLASSES["bard"])
     clone = Character(**dict(player))
     assert dict(player) == dict(clone)
 
 
 def test_save_and_load_lvl3_bard():
-    player = Character(level=3, classs=SRD_classes["bard"])
+    player = Character(level=3, classs=CLASSES["bard"])
     clone = Character(**dict(player))
     assert dict(player) == dict(clone)
 
@@ -49,7 +48,7 @@ def test_save_and_load_experience():
 
 
 def test_save_and_load_leveled_up_character():
-    player = Character(classs=SRD_classes["bard"])
+    player = Character(classs=CLASSES["bard"])
     for i in range(900):
         player.experience += 1
     clone = Character(**dict(player))
@@ -58,6 +57,16 @@ def test_save_and_load_leveled_up_character():
 
 def test_literal_eval_constructs_valid_dict():
     char = Character(experience=200)
+    str_keys = str(char.keys())
+    str_vals = str(char.values())
+    assert dict(zip(literal_eval(str_keys), literal_eval(str_vals))) == dict(char)
+
+
+def test_literal_eval_constructs_valid_inventory():
+    char = Character()
+    char.give_item(Item("burglars-pack"))
+    char.give_item(Item("battleaxe"))
+    char.give_item(Item("scale-mail"))
     str_keys = str(char.keys())
     str_vals = str(char.values())
     assert dict(zip(literal_eval(str_keys), literal_eval(str_vals))) == dict(char)
@@ -93,7 +102,7 @@ def test_save_and_load_hitpoints():
 
 def test_save_and_load_equipment():
     player = Character()
-    player.giveItem(SRD_equipment["bagpipes"])
+    player.give_item(Item("bagpipes"))
     assert dict(Character(**dict(player))) == dict(player)
 
 
@@ -103,18 +112,18 @@ def test_save_and_load_armor_class():
 
 
 def test_save_and_load_light_armor_class():
-    player = Character(classs=SRD_classes["bard"], dexterity=14)
+    player = Character(classs=CLASSES["bard"], dexterity=14)
     assert dict(Character(**dict(player))) == dict(player)
 
 
 def test_save_and_load_heavy_armor_class():
-    player = Character(classs=SRD_classes["paladin"], dexterity=14)
+    player = Character(classs=CLASSES["paladin"], dexterity=14)
     assert dict(Character(**dict(player))) == dict(player)
 
 
 def test_str_repr():
-    player = Character(classs=SRD_classes["fighter"])
-    player.giveItem(SRD_equipment["flute"])
+    player = Character(classs=CLASSES["fighter"])
+    player.give_item(Item("flute"))
     player.experience += 50
     character_repr = str(player)
     mandatory_attrs = [
@@ -140,7 +149,7 @@ def test_str_repr():
     assert sum(
         [value["name"] in character_repr for value in player.proficiencies.values()]
     ) == len(player.proficiencies)
-    assert sum([value["name"] in character_repr for value in player.inventory]) == len(
+    assert sum([value.name in character_repr for value in player.inventory]) == len(
         player.inventory
     )
     assert sum(

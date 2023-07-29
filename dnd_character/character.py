@@ -1,9 +1,14 @@
-from typing import Optional, Union
+from typing import Optional, Union, TYPE_CHECKING
 from uuid import uuid4, UUID
 import math
 import logging
 
-from .SRD import SRD, SRD_class_levels, JsonData
+if TYPE_CHECKING:
+    from .classes import _CLASS
+    from .spellcasting import _SPELL
+
+from .SRD import SRD, SRD_class_levels
+from .equipment import _Item, Item
 from .experience import Experience, experience_at_level, level_at_experience
 from .dice import sum_rolls
 
@@ -29,7 +34,7 @@ class Character:
         self,
         *,  # This * forces the caller to use keyword arguments
         uid: Optional[Union[UUID, str]] = None,
-        classs: Optional[JsonData] = None,
+        classs: Optional["_CLASS"] = None,
         class_name: Optional[str] = None,
         class_index: Optional[str] = None,
         name: Optional[str] = None,
@@ -62,10 +67,10 @@ class Character:
         current_hd: Optional[int] = None,
         proficiencies: Optional[dict] = None,
         saving_throws: Optional[list] = None,
-        cantrips_known: Optional[dict] = None,
-        spells_known: Optional[dict] = None,
-        spells_prepared: Optional[list] = None,
-        spell_slots: Optional[dict] = None,
+        cantrips_known: Optional[list["_SPELL"]] = None,
+        spells_known: Optional[list["_SPELL"]] = None,
+        spells_prepared: Optional[list["_SPELL"]] = None,
+        spell_slots: Optional[dict[str, int]] = None,
         skills_strength: Optional[dict] = None,
         skills_dexterity: Optional[dict] = None,
         skills_wisdom: Optional[dict] = None,
@@ -75,7 +80,6 @@ class Character:
         prof_bonus: int = 0,
         ability_score_bonus: int = 0,
         class_features: Optional[dict] = None,
-        class_spellcasting: Optional[dict] = None,
         class_features_enabled: Optional[list] = None,
         spellcasting_stat: Optional[str] = None,
         player_options: Optional[dict] = None,
@@ -141,9 +145,6 @@ class Character:
         self.class_features_enabled = (
             class_features_enabled if class_features_enabled is not None else []
         )
-        self.class_spellcasting = (
-            class_spellcasting if class_spellcasting is not None else {}
-        )
 
         # Ability Scores
         self.strength = self.setInitialAbilityScore(strength)
@@ -166,6 +167,21 @@ class Character:
         )
         self._current_hp = current_hp if current_hp is not None else int(self.max_hp)
         self.temp_hp = 0 if temp_hp is None else int(temp_hp)
+
+        # Spells, Skills, Proficiencies
+        self.proficiencies = proficiencies if proficiencies is not None else {}
+        self.saving_throws = saving_throws if saving_throws is not None else []
+        self.spellcasting_stat = spellcasting_stat
+        self._cantrips_known: list["_SPELL"] = (
+            cantrips_known if cantrips_known is not None else []
+        )
+        self._spells_known: list["_SPELL"] = (
+            spells_known if spells_known is not None else []
+        )
+        self._spells_prepared: list["_SPELL"] = (
+            spells_prepared if spells_prepared is not None else []
+        )
+        self.set_spell_slots(spell_slots)
 
         # Experience points
         self._level = 1
@@ -190,15 +206,6 @@ class Character:
                     f"Custom level for {str(self.name)}: {str(level)} instead of {str(self.level)}"
                 )
                 self._level = level
-
-        # Spells, Skills, Proficiencies
-        self.proficiencies = proficiencies if proficiencies is not None else {}
-        self.saving_throws = saving_throws if saving_throws is not None else []
-        self.cantrips_known = cantrips_known
-        self.spells_known = spells_known
-        self.spells_prepared = spells_prepared
-        self.spell_slots = spell_slots
-        self.spellcasting_stat = spellcasting_stat
 
         if skills_charisma is None:
             self.skills_charisma = {
@@ -262,10 +269,11 @@ class Character:
             )
         self.wealth = final_wealth
 
-        self.inventory: list[dict] = []
+        # Inventory. Deserialize items and give them one by one
+        self._inventory: list[_Item] = []
         if inventory is not None:
             for item in inventory:
-                self.giveItem(item)
+                self.give_item(_Item(**item))
 
         # Final steps of initialization -- the classs.setter does lots of work here
         # setting the self.classs attr applies "class features" appropriate to character's level
@@ -275,7 +283,7 @@ class Character:
         if armor_class is not None:
             self.armor_class = armor_class
         elif not hasattr(self, "armor_class"):
-            self.armor_class = self.baseArmorClass
+            self.armor_class = self.base_armor_class
         self._dead = dead
         self._death_saves = death_saves
         self._death_fails = death_fails
@@ -327,7 +335,7 @@ class Character:
             f"Current Experience: {str(self.experience)}\n"
             f"EXP to next Level: {str(self.experience.to_next_level)}\n\n"
             f"Proficiencies:\n{', '.join([value['name'] for value in self.proficiencies.values()])}\n\n"
-            f"Inventory:\n{', '.join([item['name'] for item in self.inventory])}\n\n"
+            f"Inventory:\n{', '.join([item.name for item in self.inventory])}\n\n"
             f"Class Features:\n{', '.join([item['name'] for item in self.class_features.values()])}\n\n"
         )
 
@@ -341,6 +349,10 @@ class Character:
                 "dexterity",
                 "dead",
                 "current_hp",
+                "inventory",
+                "cantrips_known",
+                "spells_known",
+                "spells_prepared",
             ]
         )
         return keys
@@ -359,12 +371,44 @@ class Character:
                 self._dexterity,
                 self._dead,
                 self._current_hp,
+                [dict(item) for item in self._inventory],
+                [dict(spell) for spell in self._cantrips_known],
+                [dict(spell) for spell in self._spells_known],
+                [dict(spell) for spell in self._spells_prepared],
             ]
         )
         return vals
 
     def __getitem__(self, key: str) -> Union[dict, list, int, str, None]:
         return dict(zip(self.keys(), self.values()))[key]
+
+    @property
+    def cantrips_known(self) -> list["_SPELL"]:
+        return self._cantrips_known
+
+    @cantrips_known.setter
+    def cantrips_known(self, new_val) -> None:
+        self._cantrips_known = new_val
+
+    @property
+    def spells_known(self) -> list["_SPELL"]:
+        return self._spells_known
+
+    @spells_known.setter
+    def spells_known(self, new_val) -> None:
+        self._spells_known = new_val
+
+    @property
+    def spells_prepared(self) -> list["_SPELL"]:
+        return self._spells_prepared
+
+    @spells_prepared.setter
+    def spells_prepared(self, new_val) -> None:
+        self._spells_prepared = new_val
+
+    @property
+    def inventory(self) -> list[_Item]:
+        return self._inventory
 
     @property
     def dead(self) -> bool:
@@ -425,9 +469,9 @@ class Character:
     @dexterity.setter
     def dexterity(self, new_value: int) -> None:
         self._dexterity = new_value
-        self.armor_class = self.baseArmorClass
+        self.armor_class = self.base_armor_class
         for item in self.inventory:
-            self.applyArmorClass(item)
+            self.apply_armor_class(item)
 
     @property
     def experience(self) -> Experience:
@@ -444,38 +488,45 @@ class Character:
             self._experience.update_level()
 
     @property
-    def classs(self) -> Optional[JsonData]:
+    def classs(self) -> Optional["_CLASS"]:
         return self.__class
 
     @classs.setter
-    def classs(self, new_class: Optional[JsonData]) -> None:
+    def classs(self, new_class: Optional["_CLASS"]) -> None:
         """
         Triggered when the character's class is changed
         """
+        if isinstance(new_class, dict):
+            # backwards compatibility
+            from .classes import CLASSES
+
+            LOG.warning("Implicitly converting classs dict to dataclass.")
+            new_class = CLASSES[new_class["index"]]
+
         self.__class = new_class
         if new_class is None:
             return
 
-        def set_class():
+        def set_class() -> None:
             """
             Set miscellaneous class-related properties such as:
             class name, hit dice, level progression data, proficiencies, saving throws,
             spellcasting, and class features
             """
-            self.class_name = new_class["name"]
-            self.class_index = new_class["index"]
-            self.hd = new_class["hit_die"]
+            self.class_name = new_class.name
+            self.class_index = new_class.index
+            self.hd = new_class.hit_die
             self._class_levels = SRD_class_levels[self.class_index]
-            if "spellcasting" in new_class:
-                self.spellcasting_stat = new_class["spellcasting"][
-                    "spellcasting_ability"
-                ]["index"]
+            if new_class.spellcasting:
+                self.spellcasting_stat = new_class.spellcasting["spellcasting_ability"][
+                    "index"
+                ]
             else:
                 self.spellcasting_stat = None
             self.apply_class_level()
 
             # create dict such as { "all-armor": {"name": "All armor", "type": "Armor"} }
-            for proficiency in new_class["proficiencies"]:
+            for proficiency in new_class.proficiencies:
                 data = SRD(proficiency["url"])
                 self.proficiencies[proficiency["index"]] = {
                     "name": data["name"],
@@ -483,17 +534,17 @@ class Character:
                 }
 
             self.saving_throws = [
-                saving_throw["name"] for saving_throw in new_class["saving_throws"]
+                saving_throw["name"] for saving_throw in new_class.saving_throws
             ]
 
-        def set_starting_equipment():
+        def set_starting_equipment() -> None:
             """
             Sets `player_options["starting_equipment"]` to a list of strings
             """
-            starting_equipment = new_class["starting_equipment"]
-            for item in starting_equipment:
-                for i in range(item["quantity"]):
-                    self.giveItem(SRD(item["equipment"]["url"]))
+            for starting_equipment in new_class.starting_equipment:
+                new_item = Item(starting_equipment["equipment"]["index"])
+                new_item.quantity = starting_equipment["quantity"]
+                self.give_item(new_item)
 
             self.player_options["starting_equipment"] = []
 
@@ -507,7 +558,7 @@ class Character:
                     option["equipment_category"]["name"], ", ".join(choices_names)
                 )
 
-            for item_option in new_class["starting_equipment_options"]:
+            for item_option in new_class.starting_equipment_options:
                 options = []
                 opts = item_option["from"]
                 if "options" not in opts.keys():
@@ -553,7 +604,8 @@ class Character:
     def apply_class_level(self) -> None:
         """
         Applies changes based on the character's class and level
-        e.g., adds new class features
+        e.g., adds new class features, spell slots
+        Called by `level.setter` and `classs.setter`
         """
         if self.level > 20:
             return
@@ -568,7 +620,29 @@ class Character:
                 self.class_features[feat["index"]] = SRD(feat["url"])
             while len(self.class_features_enabled) < len(self.class_features):
                 self.class_features_enabled.append(True)
-            self.class_spellcasting = data.get("spellcasting", self.class_spellcasting)
+
+            # Fetch new spell slots
+            spell_slots = data.get("spellcasting", self.spell_slots)
+            self.set_spell_slots(spell_slots)
+
+    def set_spell_slots(self, new_spell_slots: dict[str, int]) -> dict[str, int]:
+        default_spell_slots = {
+            "cantrips_known": 0,
+            "spells_known": 0,
+            "spell_slots_level_1": 0,
+            "spell_slots_level_2": 0,
+            "spell_slots_level_3": 0,
+            "spell_slots_level_4": 0,
+            "spell_slots_level_5": 0,
+            "spell_slots_level_6": 0,
+            "spell_slots_level_7": 0,
+            "spell_slots_level_8": 0,
+            "spell_slots_level_9": 0,
+        }
+        self.spell_slots = new_spell_slots if new_spell_slots is not None else {}
+        for key in default_spell_slots:
+            if key not in self.spell_slots:
+                self.spell_slots[key] = default_spell_slots[key]
 
     @property
     def level(self) -> int:
@@ -589,78 +663,77 @@ class Character:
             self.current_hd = self.max_hd
         self.apply_class_level()
 
-    def removeShields(self) -> None:
-        """Removes all shields from self.inventory. Used by self.giveItem when equipping shield"""
-        for i, item in enumerate(self.inventory):
+    def remove_shields(self) -> None:
+        """Removes all shields from self._inventory. Used by self.give_item when equipping shield"""
+        for i, item in enumerate(self._inventory):
             if (
-                item["equipment_category"]["index"] == "armor"
-                and item["armor_category"] == "Shield"
+                item.equipment_category["index"] == "armor"
+                and item.armor_category == "Shield"
             ):
-                self.inventory.pop(i)
+                self._inventory.pop(i)
 
-    def removeArmor(self) -> None:
-        """Removes all armor from self.inventory. Used by self.giveItem when equipping armor"""
-        for i, item in enumerate(self.inventory):
+    def remove_armor(self) -> None:
+        """Removes all armor from self._inventory. Used by self.give_item when equipping armor"""
+        for i, item in enumerate(self._inventory):
             if (
-                item["equipment_category"]["index"] == "armor"
-                and item["armor_category"] != "Shield"
+                item.equipment_category["index"] == "armor"
+                and item.armor_category != "Shield"
             ):
-                self.inventory.pop(i)
+                self._inventory.pop(i)
 
-    def applyArmorClass(self, item: dict) -> None:
-        if item["equipment_category"]["index"] == "armor":
-            if item["armor_category"] == "Shield":
-                self.removeShields()
+    def apply_armor_class(self, item: _Item) -> None:
+        if item.equipment_category["index"] == "armor":
+            if item.armor_category == "Shield":
+                self.remove_shields()
                 try:
-                    self.armor_class += item["armor_class"]["base"]
+                    self.armor_class += item.armor_class["base"]
                 except AttributeError:
                     # shield during __init__ without armor
                     self.armor_class = (
                         10
-                        + item["armor_class"]["base"]
+                        + item.armor_class["base"]
                         + Character.getModifier(self.dexterity)
                     )
             else:
-                self.removeArmor()
-                self.armor_class = item["armor_class"]["base"] + (
+                self.remove_armor()
+                self.armor_class = item.armor_class["base"] + (
                     0
-                    if not item["armor_class"]["dex_bonus"]
+                    if not item.armor_class["dex_bonus"]
                     else Character.getModifier(self.dexterity)
                 )
 
     @property
-    def baseArmorClass(self) -> int:
+    def base_armor_class(self) -> int:
         return 10 + Character.getModifier(self.dexterity)
 
-    def giveItem(self, item: dict) -> None:
+    def give_item(self, item: _Item) -> None:
         """
-        Adds an item to the Character's inventory list, as a dictionary.
+        Adds an item to the Character's inventory list.
         If the item is armor or a shield, the armor_class attribute will be set
         and any other armor/shields in the inventory will be removed.
         """
-        self.applyArmorClass(item)
-
+        self.apply_armor_class(item)
         self.inventory.append(item)
 
-    def removeItem(self, item: dict) -> None:
-        if item["equipment_category"]["index"] == "armor":
-            if item["armor_category"] == "Shield":
-                self.armor_class -= item["armor_class"]["base"]
+    def remove_item(self, item: _Item) -> None:
+        if item.equipment_category["index"] == "armor":
+            if item.armor_category == "Shield":
+                self.armor_class -= item.armor_class["base"]
             else:
                 extra_ac_bonus = 0
                 shield = [
                     item
-                    for item in self.inventory
-                    if item["equipment_category"]["index"] == "armor"
-                    and item["armor_category"] == "Shield"
+                    for item in self._inventory
+                    if item.equipment_category["index"] == "armor"
+                    and item.armor_category == "Shield"
                 ]
                 if shield:
-                    extra_ac_bonus = shield[0]["armor_class"]["base"]
+                    extra_ac_bonus = shield[0].armor_class["base"]
                 self.armor_class = (
                     10 + extra_ac_bonus + Character.getModifier(self.dexterity)
                 )
 
-        self.inventory.remove(item)
+        self._inventory.remove(item)
 
     @staticmethod
     def infer_wealth(wealth: Union[int, float]) -> dict[str, int]:

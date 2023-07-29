@@ -28,7 +28,7 @@ setup(
         "Intended Audience :: Developers",
         "Topic :: Games/Entertainment",
         "Topic :: Games/Entertainment :: Role-Playing",
-        "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3.10",
         "License :: OSI Approved :: Eclipse Public License 2.0 (EPL-2.0)",
     ],
     # requests is needed in development to update the json_cache

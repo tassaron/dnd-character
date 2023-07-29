@@ -19,21 +19,21 @@ The software is EPL-2.0 and the text for this license is in `LICENSE` as is stan
 ## Example Code
 
 ### Creating Characters and Monsters
-The `classes` module has functions for creating all 12 classes from the System Reference Document. The `monsters` module has a dictionary of monsters, which are dictionaries themselves.
+The `classes` module has functions for creating all 12 classes from the System Reference Document. The `monsters` module has a factory function for creating monsters.
 ```
 from dnd_character.classes import Bard
-from dnd_character.monsters import SRD_monsters
+from dnd_character.monsters import Monster
 from random import randint
 
 brianna = Bard(
     name="Brianna",
     level=10,
     )
-zombie = SRD_monsters["zombie"]
-attack_bonus = zombie["actions"][0]["attack_bonus"]
+zombie = Monster("zombie")
+attack_bonus = zombie.actions[0]["attack_bonus"]
 # Zombie rolls a d20 to attack a Bard
 if randint(1, 20) + attack_bonus >= brianna.armor_class:
-    print(f"{brianna.name} was hit by {zombie['name']}!")
+    print(f"{brianna.name} was hit by {zombie.name}!")
 else:
     print(f"{brianna.name} bravely dodged the attack")
 ```
@@ -41,7 +41,7 @@ else:
 ### Leveling and Experience
 The library should help leveling up characters automatically if you manage the Character's `experience` attribute. It's simpler to avoid modifying the level directly.
 ```
-import dnd_character
+from dnd_character import Character
 thor = Character(name="Thor")
 assert thor.level == 1
 thor.experience += 1000
@@ -55,36 +55,57 @@ assert thor.level == 4
 Characters initialized with a class will have the starting equipment of that class, and an attribute called `player_options` which lists the optional starting equipment.
 ```
 from dnd_character.classes import Paladin
+from dnd_character.equipment import Item
 from pprint import pprint
 sturm = Paladin(dexterity=10)
 pprint(sturm.inventory)
 print(sturm.armor_class)
 # Remove Chain Mail
-sturm.removeItem(sturm.inventory[0])
+sturm.remove_item(sturm.inventory[0])
 print(sturm.armor_class)
 # New Item
 from dnd_character.equipment import SRD_equipment
-dragonlance = SRD_equipment['lance']
-dragonlance["name"] = "Dragonlance®"
-sturm.giveItem(dragonlance)
+dragonlance = Item('lance')
+dragonlance.name = "Dragonlance®"
+sturm.give_item(dragonlance)
 # View optional starting equipment
 pprint(sturm.player_options)
 ```
 
-
 ### Using Spells
-Support for spells is not super great at the moment. Characters have dictionaries like `spells_known` and `cantrips_known` in which you're expected to store dictionaries from `SRD_spells`... but there's no useful help from the library here. Yet!
+*Support for spellcasting is limited and subject to change in the future. Please provide feedback in [the issues](/issues).*
+
+Spells are represented by _SPELL objects from `dnd_character.spellcasting`. The best way to find spells is using the `spells_for_class_level` function.
 ```
-from dnd_character.spellcasting import SRD_spells, spells_for_class_level
-from pprint import pprint
+from dnd_character.spellcasting import spells_for_class_level
 cantrips = spells_for_class_level('wizard', 0)
-print(f"Cantrips available to a Wizard: {', '.join(cantrips)}")
+print(f"Cantrips available to a Wizard:")
 for spell in cantrips:
-    print(f"{SRD_spells[spell]['name']}:")
-    pprint(SRD_spells[spell])
-    break
+    print(spell)
 ```
 
+Characters have lists to store _SPELL objects:
+- `spells_prepared`
+- `spells_known`
+- `cantrips_known`
+
+Characters have a `spell_slots` dictionary which shows the **total** spell slots. Depletion and rest mechanics are planned for a future version.
+```
+from dnd_character import Wizard
+from dnd_character.spellcasting import SPELLS
+# Create wizard and teach Identify, a level 1 spell
+my_wizard = Wizard(name="Gormwinkle")
+my_wizard.spells_prepared.append(SPELLS["identify"])
+# Get total spell slots
+spell_slots_level_1 = my_wizard.spell_slots["spell_slots_level_1"]
+print(f"{my_wizard.name} has {spell_slots_level_1} spell slots of 1st level")
+# Cast until wizard runs out of spell slots
+while spell_slots_level_1 > 0:
+    print(f"Casting {SPELLS['identify'].name}!")
+    spell_slots_level_1 -= 1
+```
+
+There is currently no way to manage wizard spellbooks or class-specific features such as the Wizard's arcane recovery or the Sorcerer's metamagic.
 
 ## Character Object
 Normal initialization arguments for a Character object:
@@ -94,7 +115,7 @@ age          (str)
 gender       (str)
 alignment    (str): character's two letter alignment
 description  (str): physical description of player character
-biography    (str): backstory of player character	
+background   (str): one-word backstory (e.g., knight, chef)
 level        (int): starting level
 wealth       (int): starting wealth	
 strength     (int)
@@ -104,7 +125,7 @@ wisdom       (int)
 intelligence (int)
 charisma     (int)
 hp           (int):
-classs      (dict): JSON returned from the 5e API -- dnd_character.SRD.SRD_classes["bard"]
+classs    (_CLASS): dataclass based on JSON returned from the 5e API (e.g., CLASSES['bard'])
 ```
 In addition, the Character object can receive attributes that are normally set automatically, such as the UUID. This is for re-loading the objects from serialized data (via `Character(**characterData)`) and probably aren't arguments you would write manually into your code.
 
