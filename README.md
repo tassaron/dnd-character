@@ -38,6 +38,12 @@ else:
     print(f"{brianna.name} bravely dodged the attack")
 ```
 
+### Serializing and deserializing objects
+All objects in this library can be turned into Python dicts, which can then be turned back into objects. This means characters (along with their items and spells), and monsters as well.
+- `dict(object)` creates a serializable dict that could be reloaded from text (e.g., suitable for conversion to and from JSON)
+- `repr(object)` prints a string that would re-construct the Python object if pasted into a REPL
+- `str(object)` is not for serialization. It creates a "user-friendly" string
+
 ### Leveling and Experience
 The library should help leveling up characters automatically if you manage the Character's `experience` attribute. It's simpler to avoid modifying the level directly.
 ```

@@ -1,4 +1,4 @@
-from typing import Optional, Union, TYPE_CHECKING
+from typing import Optional, Union, Iterator, TYPE_CHECKING
 from uuid import uuid4, UUID
 import logging
 
@@ -338,48 +338,76 @@ class Character:
             f"Class Features:\n{', '.join([item['name'] for item in self.class_features.values()])}\n\n"
         )
 
-    def keys(self) -> list[str]:
-        keys = [key for key in self.__dict__ if not key.startswith("_")]
-        keys.extend(
-            [
-                "experience",
-                "death_saves",
-                "death_fails",
-                "dexterity",
-                "dead",
-                "current_hp",
-                "inventory",
-                "cantrips_known",
-                "spells_known",
-                "spells_prepared",
-            ]
-        )
-        return keys
+    def __iter__(self) -> Iterator[tuple[str, Union[dict, list, int, str, bool, None]]]:
+        """
+        Enables `dict(self)` to return a dictionary representation of this object.
+        Iterate over this object to get (key, value) pairs.
 
-    def values(self) -> list[Union[dict, list, int, str, bool, None]]:
-        vals = [
-            value if key != "uid" else str(value)
-            for key, value in self.__dict__.items()
-            if not key.startswith("_")
-        ]
-        vals.extend(
-            [
-                self._experience._experience,
-                self._death_saves,
-                self._death_fails,
-                self._dexterity,
-                self._dead,
-                self._current_hp,
-                [dict(item) for item in self._inventory],
-                [dict(spell) for spell in self._cantrips_known],
-                [dict(spell) for spell in self._spells_known],
-                [dict(spell) for spell in self._spells_prepared],
-            ]
-        )
-        return vals
+        Attrs starting with _ are skipped, as we assume they are non-serializable.
+        Such attrs must be added manually to the functions in this method.
+        """
 
-    def __getitem__(self, key: str) -> Union[dict, list, int, str, None]:
-        return dict(zip(self.keys(), self.values()))[key]
+        def keys() -> list[str]:
+            keys = [key for key in self.__dict__ if not key.startswith("_")]
+            keys.extend(
+                [
+                    "experience",
+                    "death_saves",
+                    "death_fails",
+                    "dexterity",
+                    "dead",
+                    "current_hp",
+                    "inventory",
+                    "cantrips_known",
+                    "spells_known",
+                    "spells_prepared",
+                ]
+            )
+            return keys
+
+        def values() -> list[Union[dict, list, int, str, bool, None]]:
+            vals = [
+                value if key != "uid" else str(value)
+                for key, value in self.__dict__.items()
+                if not key.startswith("_")
+            ]
+            vals.extend(
+                [
+                    self._experience._experience,
+                    self._death_saves,
+                    self._death_fails,
+                    self._dexterity,
+                    self._dead,
+                    self._current_hp,
+                    [dict(item) for item in self._inventory],
+                    [dict(spell) for spell in self._cantrips_known],
+                    [dict(spell) for spell in self._spells_known],
+                    [dict(spell) for spell in self._spells_prepared],
+                ]
+            )
+            return vals
+
+        return zip(keys(), values())
+
+    def __repr__(self) -> str:
+        """Returns a string that could be copy-pasted to create a new instance of this object"""
+        quote = lambda value: "'" if type(value) is str else ""
+        kwargs = [f"{key}={quote(value)}{value}{quote(value)}" for key, value in self]
+        return f"{type(self).__name__}({', '.join(kwargs)})"
+
+    def __eq__(self, other) -> bool:
+        """
+        Check if `other` is an identical character to `self`
+        Or if `other` is a dict that would construct an identical character
+        """
+        if type(other) is dict:
+            other = Character(**other)
+        if not isinstance(other, type(self)):
+            return False
+        for pair1, pair2 in zip(self, other):
+            if pair1 != pair2:
+                return False
+        return True
 
     @property
     def cantrips_known(self) -> list["_SPELL"]:
@@ -651,10 +679,10 @@ class Character:
     def level(self, new_level: int) -> None:
         self._level = new_level
         if self.current_hp == self.max_hp:
-            self.current_hp = Character.maximum_hp(
+            self.current_hp = Character.get_maximum_hp(
                 self.hd, new_level, self.constitution
             )
-        self.max_hp = Character.maximum_hp(self.hd, new_level, self.constitution)
+        self.max_hp = Character.get_maximum_hp(self.hd, new_level, self.constitution)
         if self.current_hd == self.max_hd:
             self.current_hd = new_level
         self.max_hd = new_level
@@ -691,14 +719,14 @@ class Character:
                     self.armor_class = (
                         10
                         + item.armor_class["base"]
-                        + Character.getModifier(self.dexterity)
+                        + Character.get_ability_modifier(self.dexterity)
                     )
             else:
                 self.remove_armor()
                 self.armor_class = item.armor_class["base"] + (
                     0
                     if not item.armor_class["dex_bonus"]
-                    else Character.getModifier(self.dexterity)
+                    else Character.get_ability_modifier(self.dexterity)
                 )
 
     @property
@@ -729,7 +757,7 @@ class Character:
                 if shield:
                     extra_ac_bonus = shield[0].armor_class["base"]
                 self.armor_class = (
-                    10 + extra_ac_bonus + Character.getModifier(self.dexterity)
+                    10 + extra_ac_bonus + Character.get_ability_modifier(self.dexterity)
                 )
 
         self._inventory.remove(item)

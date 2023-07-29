@@ -1,13 +1,18 @@
-from dnd_character import Character, Bard, CLASSES
+from dnd_character import Character, Bard, Monk, CLASSES
 from dnd_character.equipment import Item
 from ast import literal_eval
+import json
 
 
-def test_keys_values():
-    char = Character(experience=200)
-    for key, val in zip(char.keys(), char.values()):
-        assert char[key] == val
-    assert dict(zip(char.keys(), char.values())) == dict(char)
+def test_character_repr():
+    char = Character(experience=200, name="Grace")
+    new_char = eval(repr(char))
+    assert new_char == char
+
+
+def test_character_dunder_eq_with_dict():
+    char = Character(experience=200, name="Grace")
+    assert char == dict(char)
 
 
 def test_save_and_load_lvl1_character():
@@ -57,9 +62,7 @@ def test_save_and_load_leveled_up_character():
 
 def test_literal_eval_constructs_valid_dict():
     char = Character(experience=200)
-    str_keys = str(char.keys())
-    str_vals = str(char.values())
-    assert dict(zip(literal_eval(str_keys), literal_eval(str_vals))) == dict(char)
+    assert literal_eval(str(dict(char))) == dict(char)
 
 
 def test_literal_eval_constructs_valid_inventory():
@@ -67,31 +70,13 @@ def test_literal_eval_constructs_valid_inventory():
     char.give_item(Item("burglars-pack"))
     char.give_item(Item("battleaxe"))
     char.give_item(Item("scale-mail"))
-    str_keys = str(char.keys())
-    str_vals = str(char.values())
-    assert dict(zip(literal_eval(str_keys), literal_eval(str_vals))) == dict(char)
+    assert literal_eval(str(dict(char))) == dict(char)
 
 
 def test_property_decorated_methods_serialize():
     player = Character(experience=200, dexterity=15)
     clone = Character(**dict(player))
     assert dict(player) == dict(clone)
-
-
-def test_rolled_stats_serialize():
-    player = Character(experience=200)
-    serialized_char = Character(**dict(zip(player.keys(), player.values())))
-    assert serialized_char.dexterity == player.dexterity
-
-
-def test_rolled_stats_serialize_after_literal_eval():
-    player = Character(experience=200)
-    str_keys = str(player.keys())
-    str_vals = str(player.values())
-    assert (
-        Character(**dict(zip(literal_eval(str_keys), literal_eval(str_vals)))).dexterity
-        == player.dexterity
-    )
 
 
 def test_save_and_load_hitpoints():
@@ -121,7 +106,7 @@ def test_save_and_load_heavy_armor_class():
     assert dict(Character(**dict(player))) == dict(player)
 
 
-def test_str_repr():
+def test_character_str():
     player = Character(classs=CLASSES["fighter"])
     player.give_item(Item("flute"))
     player.experience += 50
@@ -174,3 +159,14 @@ def test_frightened_condition_serializes():
     serialized_bard = dict(bard)
     new_bard = Character(**serialized_bard)
     assert new_bard.conditions["frightened"] is True
+
+
+def test_character_json_classless():
+    c = Character(name="Canary")
+    assert json.loads(json.dumps(dict(c))) == dict(c)
+
+
+def test_character_json_monk_with_items():
+    c = Monk()
+    c.give_item(Item("dagger"))
+    assert json.loads(json.dumps(dict(c))) == dict(c)
