@@ -663,7 +663,7 @@ class Character:
         self.inventory.remove(item)
 
     @staticmethod
-    def infer_wealth(wealth: Union[int, float]):
+    def infer_wealth(wealth: Union[int, float]) -> dict[str, int]:
         """Estimates a reasonable coin distribution from gold denominated total wealth."""
         # Convert to platinum for smaller weight/volume
         if wealth > 100:
@@ -690,19 +690,18 @@ class Character:
         sp: int = 0,
         cp: int = 0,
         conversion: bool = False,
-    ):
+    ) -> None:
         change = locals()
         change.pop("self", None)
         change.pop("conversion", None)
 
-        if conversion:
-            total_change = sum([coin_value[u] * v for u, v in change.items()])
-            new_wealth = round(self.wealth + total_change, 2)
-            if new_wealth < 0:
-                raise ValueError("Character has not enough wealth to cover the change!")
+        total_change = sum([coin_value[u] * v for u, v in change.items()])
+        new_wealth = round(self.wealth + total_change, 2)
+        if new_wealth < 0:
+            raise ValueError("Character has not enough wealth to cover the change!")
 
-            self.wealth = new_wealth
-            self.wealth_detailed = self.infer_wealth(self.wealth)
+        if conversion:
+            self.wealth_detailed = self.infer_wealth(new_wealth)
         else:
             for unit, value in change.items():
                 new_value = self.wealth_detailed[unit] + value
@@ -710,8 +709,9 @@ class Character:
                     raise ValueError(
                         f"Character has not enough {unit}! Current balance: {self.wealth_detailed[unit]}"
                     )
-                else:
-                    self.wealth_detailed[unit] = new_value
+                self.wealth_detailed[unit] = new_value
+
+        self.wealth = new_wealth
 
     @staticmethod
     def setInitialAbilityScore(stat: Optional[int]) -> int:

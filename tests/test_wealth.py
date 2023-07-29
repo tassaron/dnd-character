@@ -75,18 +75,14 @@ def test_character_decrease_wealth_conversion():
 
 def test_character_decrease_wealth_failure_no_conversion():
     c = Character(wealth_detailed={"pp": 0, "gp": 1, "ep": 0, "sp": 11, "cp": 1})
-    with pytest.raises(ValueError) as e:
+    with pytest.raises(ValueError, match="not enough "):
         c.change_wealth(pp=0, gp=0, ep=0, sp=-20, cp=0, conversion=False)
-        # make sure this is our ValueError, not somehow unrelated
-        assert "not enough " in str(e)
 
 
 def test_character_decrease_wealth_failure_conversion():
     c = Character(wealth_detailed={"pp": 0, "gp": 1, "ep": 0, "sp": 11, "cp": 1})
-    with pytest.raises(ValueError) as e:
+    with pytest.raises(ValueError, match="not enough "):
         c.change_wealth(pp=0, gp=0, ep=0, sp=-30, cp=0, conversion=True)
-        # make sure this is our ValueError, not somehow unrelated
-        assert "not enough " in str(e)
 
 
 # Run this test with multiple inputs
