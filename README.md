@@ -64,7 +64,6 @@ print(sturm.armor_class)
 sturm.remove_item(sturm.inventory[0])
 print(sturm.armor_class)
 # New Item
-from dnd_character.equipment import SRD_equipment
 dragonlance = Item('lance')
 dragonlance.name = "Dragonlance®"
 sturm.give_item(dragonlance)
