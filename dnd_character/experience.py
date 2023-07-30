@@ -3,11 +3,11 @@ An integer-like property of the Character object that handles everything related
 experience points, leveling up and down, etc.
 """
 from functools import lru_cache
+from typing import TYPE_CHECKING
 import logging
-import typing
 
 
-if typing.TYPE_CHECKING:
+if TYPE_CHECKING:
     # allows type annotations to work without a circular import
     # https://peps.python.org/pep-0563/
     from .character import Character as Character

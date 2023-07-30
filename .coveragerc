@@ -2,4 +2,4 @@
 [report]
 exclude_lines = 
     pragma: no cover
-    if typing.TYPE_CHECKING:
+    if TYPE_CHECKING:
