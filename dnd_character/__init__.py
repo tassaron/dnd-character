@@ -10,5 +10,5 @@ __author__ = "Brianna Rainey"
 __copyright__ = "Copyright 2023 Brianna Rainey"
 __credits__ = ["Brianna Rainey", "Gergő", "Markis Cook", "Tim Van Rillaer"]
 __license__ = "EPL-2.0"
-__version__ = "23.07.28"
+__version__ = "23.07.29"
 __maintainer__ = "Brianna Rainey"
