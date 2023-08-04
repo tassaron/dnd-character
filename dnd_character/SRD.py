@@ -1,26 +1,49 @@
 """
-A cached function that gets SRD data from a DND 5e REST API
+SRD() is a cached function that gets SRD data from a DND 5e REST API
+This module has the SRD index `SRD_endpoints`
+and some other SRD_ globals containing rules and class data
+
+Environment variables:
+    DND_LOGGING=WARNING
+    DND_SRD_API=http://dnd5eapi.co
 """
 import json
 from os import environ, walk, path, remove, mkdir
 import logging
 from typing import Callable, TypeAlias, Union
 
-LOG = logging.getLogger(__package__)
-LOG.setLevel(logging.DEBUG)
-
 try:
-    JSON_CACHE = f"{path.dirname(path.abspath(__file__))}/json_cache"
-    if not path.exists(JSON_CACHE):
-        mkdir(JSON_CACHE)
-
-except Exception as e:
-    LOG.error(f"Entire JSON cache failed to load: {str(e)}")
-
+    import requests
+except ModuleNotFoundError:
+    requests = None
 
 # Json Data is unstructured and could be recursively nested
 JsonValues: TypeAlias = Union[str, int, list["JsonValues"], dict[str, "JsonValues"]]
 JsonData: TypeAlias = dict[str, JsonValues]
+
+
+def make_log(loglevel: str) -> logging.Logger:
+    LOG = logging.getLogger(__package__)
+    LOG.setLevel(loglevel)
+    ch = logging.StreamHandler()
+    ch.setLevel(loglevel)
+    formatter = logging.Formatter("<%(levelname)s> %(message)s")
+    ch.setFormatter(formatter)
+    LOG.addHandler(ch)
+    return LOG
+
+
+LOG = make_log(environ.get("DND_LOGGING", "WARNING"))
+
+
+try:
+    JSON_CACHE = path.join(path.dirname(path.abspath(__file__)), "json_cache")
+    if not path.exists(JSON_CACHE):
+        LOG.info(f"Creating directory {JSON_CACHE}")
+        mkdir(JSON_CACHE)
+
+except Exception as e:
+    LOG.error(f"Entire JSON cache failed to load: {str(e)}")
 
 
 class DecoratedAPICallable:
@@ -78,11 +101,14 @@ def __SRD_API_CALL() -> Callable[[str], JsonData]:
     """
     Closure for API calls
     """
-    SRD_API = environ.get("SRD_API", "http://dnd5eapi.co")
+    SRD_API = environ.get("DND_SRD_API", "http://dnd5eapi.co")
 
     @cached_json
     def get_from_SRD(uri: str) -> JsonData:
-        import requests
+        if requests is None:
+            raise ModuleNotFoundError(
+                "No module named 'requests', which is needed for a live API call"
+            )
 
         LOG.warning(f"Live API request! {str(uri)}")
 
