@@ -144,6 +144,9 @@ class Character:
         self.class_features_enabled = (
             class_features_enabled if class_features_enabled is not None else []
         )
+        self.class_features_data = self.get_class_features_data(
+            class_name=self.class_name, class_level=level
+        )
 
         # Ability Scores
         self.strength = self.set_initial_ability_score(strength)
@@ -652,6 +655,18 @@ class Character:
             spell_slots = data.get("spellcasting", self.spell_slots)
             self.set_spell_slots(spell_slots)
 
+        # During level up some class specific values change. example: rage damage bonus 2 -> 4
+        # Class specific counters do not reset! example: available inspirations
+        new_cfd = self.get_class_features_data(
+            class_name=self.class_name, class_level=self.level
+        )
+        self.class_features_data = {
+            k: v
+            if "available" not in k and "days" not in k
+            else self.class_features_data[k]
+            for k, v in new_cfd.items()
+        }
+
     def set_spell_slots(self, new_spell_slots: dict[str, int]) -> dict[str, int]:
         default_spell_slots = {
             "cantrips_known": 0,
@@ -842,3 +857,174 @@ class Character:
             + ((int(hd / 2) + 1) * (level - 1))
             + Character.get_ability_modifier(constitution)
         )
+
+    def get_class_features_data(self, class_name, class_level):
+        """
+        Creates a dict for class features. Assumes a fully rested character!
+        """
+        if class_level is None:
+            return None
+
+        # Load level appropriate class features
+        data = SRD_class_levels[class_name][class_level - 1]["class_specific"]
+
+        # Create class feature counters
+        if self.class_index == "Barbarian":
+            data["max_rage_count"] = data["rage_count"]
+            data.pop("rage_count")
+
+        elif self.class_index == "Bard":
+            data["max_inspiration_count"] = max(
+                1, self.get_ability_modifier(self.charisma)
+            )
+
+        elif self.class_index == "Cleric":
+            data["max_channel_divinity_charges"] = data["channel_divinity_charges"]
+            data.pop("channel_divinity_charges")
+
+            data["max_divine_intervention_charges"] = 1 if class_level >= 10 else 0
+
+        elif self.class_index == "Druid":
+            data["max_wild_shape_charges"] = 1 if class_level >= 2 else 0
+
+        elif self.class_index == "Fighter":
+            data["max_action_surges"] = data["action_surges"]
+            data.pop("action_surges")
+
+            data["max_indomitable_uses"] = data["indomitable_uses"]
+            data.pop("indomitable_uses")
+
+            data["max_second_wind"] = 1
+            data["available_second_wind"] = 1
+
+        elif self.class_index == "Monk":
+            data["max_ki_points"] = data["ki_points"]
+            data.pop("ki_points")
+
+            data["max_wholeness_of_body"] = 1 if class_level >= 6 else 0
+
+        elif self.class_index == "Paladin":
+            data["max_divine_sense"] = 1 + self.get_ability_modifier(self.charisma)
+            data["max_lay_on_hands_points"] = 5 * class_level
+            data["max_channel_divinity"] = 1
+            data["max_cleansing_touch"] = max(
+                1, self.get_ability_modifier(self.charisma)
+            )
+
+        elif self.class_index == "Ranger":
+            pass  # No interaction between class features and rest mechanic
+
+        elif self.class_index == "Rogue":
+            data["max_stroke_of_luck"] = 1 if class_level >= 20 else 0
+
+        elif self.class_index == "Sorcerer":
+            data["max_sorcery_points"] = data["sorcery_points"]
+            data.pop("sorcery_points")
+
+        elif self.class_index == "Warlock":
+            data["max_mire_the_mind"] = 1 if class_level >= 5 else 0
+            data["max_sign_of_ill_omen"] = 1 if class_level >= 5 else 0
+            data["max_dark_one's_own_luck"] = 1 if class_level >= 6 else 0
+            data["max_bewitching_whispers"] = 1 if class_level >= 7 else 0
+            data["max_dreadful_word"] = 1 if class_level >= 7 else 0
+            data["max_sculptor_of_flesh"] = 1 if class_level >= 7 else 0
+            data["max_thief_of_five_fates"] = 1 if class_level >= 7 else 0
+            data["max_minions_of_chaos"] = 1 if class_level >= 9 else 0
+            data["max_fiendish_resilience"] = 1 if class_level >= 10 else 0
+            data["max_hurl_through_hell"] = 1 if class_level >= 14 else 0
+            data["max_chains_of_carceri"] = 1 if class_level >= 20 else 0
+            data["max_eldritch_master"] = 1 if class_level >= 20 else 0
+
+        elif self.class_index == "Wizard":
+            data["max_arcane_recovery"] = 1
+
+        else:
+            return None
+
+        # Assign counters (initialized for a fully rested state)
+        data = self.reset_class_features_data_counters(
+            data=data, short_rest=True, long_rest=True, reset_day_counters=True
+        )
+
+        return data
+
+    def reset_class_features_data_counters(
+        self,
+        data: dict,
+        short_rest: bool,
+        long_rest: bool,
+        reset_day_counters: bool = False,
+    ):
+        if not (short_rest and long_rest):
+            raise InvalidParameterError("At least one rest type should be True!")
+
+        if self.class_index == "Barbarian":
+            if long_rest:
+                data["available_rage_count"] = data["max_rage_count"]
+
+        elif self.class_index == "Bard":
+            if long_rest or self.level >= 5:
+                data["available_inspiration_count"] = data["max_inspiration_count"]
+
+        elif self.class_index == "Cleric":
+            if long_rest:
+                data["available_divine_intervention_charges"] = data[
+                    "max_divine_intervention_charges"
+                ]
+            data["available_channel_divinity_charges"] = data[
+                "max_channel_divinity_charges"
+            ]
+            if reset_day_counters:
+                data["days_since_last_divine_intervention"] = 999  # 7 day cooldown
+
+        elif self.class_index == "Druid":
+            data["available_wild_shape_charges"] = data["max_wild_shape_charges"]
+
+        elif self.class_index == "Fighter":
+            data["available_action_surges"] = data["max_action_surges"]
+            data["available_indomitable_uses"] = data["max_indomitable_uses"]
+            data["available_second_wind"] = 1
+
+        elif self.class_index == "Monk":
+            if long_rest:
+                data["available_wholeness_of_body"] = data["max_wholeness_of_body"]
+            data["available_ki_points"] = data["max_ki_points"]
+
+        elif self.class_index == "Paladin":
+            if long_rest:
+                data["available_divine_sense"] = data["max_divine_sense"]
+                data["available_lay_on_hands_points"] = data["max_lay_on_hands_points"]
+                data["available_cleansing_touch"] = data["max_cleansing_touch"]
+            data["available_channel_divinity"] = 1
+
+        elif self.class_index == "Ranger":
+            pass  # No interaction between class features and rest mechanic
+
+        elif self.class_index == "Rogue":
+            data["available_stroke_of_luck"] = data["max_stroke_of_luck"]
+
+        elif self.class_index == "Sorcerer":
+            if long_rest:
+                data["available_sorcery_points"] = data["max_sorcery_points"]
+
+        elif self.class_index == "Warlock":
+            if long_rest:
+                data["available_mire_the_mind"] = data["max_mire_the_mind"]
+                data["available_sign_of_ill_omen"] = data["max_sign_of_ill_omen"]
+                data["available_dark_one's_own_luck"] = data["max_dark_one's_own_luck"]
+                data["available_bewitching_whispers"] = data["max_bewitching_whispers"]
+                data["available_dreadful_word"] = data["max_dreadful_word"]
+                data["available_sculptor_of_flesh"] = data["max_sculptor_of_flesh"]
+                data["available_thief_of_five_fates"] = data["max_thief_of_five_fates"]
+                data["available_minions_of_chaos"] = data["max_minions_of_chaos"]
+                data["available_fiendish_resilience"] = data["max_fiendish_resilience"]
+                data["available_hurl_through_hell"] = data["max_hurl_through_hell"]
+                data["available_chains_of_carceri"] = data["max_chains_of_carceri"]
+                data["available_eldritch_master"] = data["max_eldritch_master"]
+
+        elif self.class_index == "Wizard":
+            data["available_arcane_recovery"] = data["max_arcane_recovery"]
+            if reset_day_counters:
+                data["days_since_last_arcane_recovery"] = 999  # 1 day cooldown
+
+        return features
