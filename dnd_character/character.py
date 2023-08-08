@@ -862,32 +862,32 @@ class Character:
         """
         Creates a dict for class features. Assumes a fully rested character!
         """
-        if class_level is None:
+        if class_level is None or class_name is None:
             return None
 
         # Load level appropriate class features
         data = SRD_class_levels[class_name.lower()][class_level - 1]["class_specific"]
 
         # Create class feature counters
-        if self.class_index == "Barbarian":
+        if class_index == "Barbarian":
             data["max_rage_count"] = data["rage_count"]
             data.pop("rage_count")
 
-        elif self.class_index == "Bard":
+        elif class_index == "Bard":
             data["max_inspiration_count"] = max(
                 1, self.get_ability_modifier(self.charisma)
             )
 
-        elif self.class_index == "Cleric":
+        elif class_index == "Cleric":
             data["max_channel_divinity_charges"] = data["channel_divinity_charges"]
             data.pop("channel_divinity_charges")
 
             data["max_divine_intervention_charges"] = 1 if class_level >= 10 else 0
 
-        elif self.class_index == "Druid":
+        elif class_index == "Druid":
             data["max_wild_shape_charges"] = 1 if class_level >= 2 else 0
 
-        elif self.class_index == "Fighter":
+        elif class_index == "Fighter":
             data["max_action_surges"] = data["action_surges"]
             data.pop("action_surges")
 
@@ -897,13 +897,13 @@ class Character:
             data["max_second_wind"] = 1
             data["available_second_wind"] = 1
 
-        elif self.class_index == "Monk":
+        elif class_index == "Monk":
             data["max_ki_points"] = data["ki_points"]
             data.pop("ki_points")
 
             data["max_wholeness_of_body"] = 1 if class_level >= 6 else 0
 
-        elif self.class_index == "Paladin":
+        elif class_index == "Paladin":
             data["max_divine_sense"] = 1 + self.get_ability_modifier(self.charisma)
             data["max_lay_on_hands_points"] = 5 * class_level
             data["max_channel_divinity"] = 1
@@ -911,17 +911,17 @@ class Character:
                 1, self.get_ability_modifier(self.charisma)
             )
 
-        elif self.class_index == "Ranger":
+        elif class_index == "Ranger":
             pass  # No interaction between class features and rest mechanic
 
-        elif self.class_index == "Rogue":
+        elif class_index == "Rogue":
             data["max_stroke_of_luck"] = 1 if class_level >= 20 else 0
 
-        elif self.class_index == "Sorcerer":
+        elif class_index == "Sorcerer":
             data["max_sorcery_points"] = data["sorcery_points"]
             data.pop("sorcery_points")
 
-        elif self.class_index == "Warlock":
+        elif class_index == "Warlock":
             data["max_mire_the_mind"] = 1 if class_level >= 5 else 0
             data["max_sign_of_ill_omen"] = 1 if class_level >= 5 else 0
             data["max_dark_one's_own_luck"] = 1 if class_level >= 6 else 0
@@ -935,11 +935,8 @@ class Character:
             data["max_chains_of_carceri"] = 1 if class_level >= 20 else 0
             data["max_eldritch_master"] = 1 if class_level >= 20 else 0
 
-        elif self.class_index == "Wizard":
+        elif class_index == "Wizard":
             data["max_arcane_recovery"] = 1
-
-        else:
-            return None
 
         # Assign counters (initialized for a fully rested state)
         data = self.reset_class_features_data_counters(
