@@ -866,7 +866,7 @@ class Character:
             return None
 
         # Load level appropriate class features
-        data = SRD_class_levels[class_name][class_level - 1]["class_specific"]
+        data = SRD_class_levels[class_name.lower()][class_level - 1]["class_specific"]
 
         # Create class feature counters
         if self.class_index == "Barbarian":
