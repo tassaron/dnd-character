@@ -12,6 +12,8 @@ SRD_monsters = {
 
 @dataclass(kw_only=True)
 class _Monster:
+    """Dataclass for items. Deserialize item with `_Monster(**dict)` or Monster() function"""
+
     index: str
     uid: str = uuid4().hex
     type: str

@@ -11,6 +11,12 @@ SRD_spells = {
 
 @dataclass(kw_only=True, frozen=True, slots=True)
 class _SPELL:
+    """
+    Dataclass for spells. Spells are suggested to be constants. (Immutable.)
+    So deserialization shouldn't be necessary, but is possible with _SPELL(**dict).
+    Or get the constant version from `dnd_character.spellcasting.SPELLS[spell_name]`
+    """
+
     area_of_effect: Optional[dict[str, Union[str, int]]] = None
     attack_type: Optional[str] = None
     casting_time: str

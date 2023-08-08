@@ -12,6 +12,8 @@ SRD_equipment = {
 
 @dataclass(kw_only=True)
 class _Item:
+    """Dataclass for items. Deserialize item with `_Item(**dict)` or Item() function"""
+
     uid: str = uuid4().hex
     contents: list[dict[str, Union[int, dict[str, str]]]]
     cost: dict[str, Union[str, int]]

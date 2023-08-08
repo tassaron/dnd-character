@@ -6,6 +6,12 @@ from .character import Character
 
 @dataclass(kw_only=True, frozen=True, slots=True)
 class _CLASS:
+    """
+    Dataclass for (D&D 5e) classes. Classes are suggested to be constants. (Immutable.)
+    So deserialization shouldn't be necessary, but is possible with _CLASS(**dict).
+    Or get the constant version from `dnd_character.classes.CLASSES[class_name]`
+    """
+
     index: str
     name: str
     url: str
