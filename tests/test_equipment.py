@@ -346,3 +346,8 @@ def test_item_serialization(item_name: str, expected_value: dict):
     item = Item(item_name)
     serialized_item = literal_eval(str(dict(item)))
     assert all([serialized_item[k] == v for k, v in expected_value.items()])
+
+
+def test_item_function_deserializes_dict():
+    torch = Item("torch")
+    assert Item(dict(torch)) == torch

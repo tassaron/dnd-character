@@ -79,3 +79,8 @@ def test_zombie_serialization():
     }
     serialized_zombie = dict(zombie)
     assert all([serialized_zombie[k] == v for k, v in expected_zombie.items()])
+
+
+def test_monster_function_deserializes_dict():
+    roper = Monster("roper")
+    assert Monster(dict(roper)) == roper

@@ -12,7 +12,7 @@ SRD_monsters = {
 
 @dataclass(kw_only=True)
 class _Monster:
-    """Dataclass for items. Deserialize item with `_Monster(**dict)` or Monster() function"""
+    """Dataclass for monsters. Deserialize monster with `_Monster(**dict)` or Monster() function"""
 
     index: str
     uid: str = uuid4().hex
@@ -57,5 +57,14 @@ class _Monster:
             yield k, v
 
 
-def Monster(index: str) -> _Monster:
-    return _Monster(**SRD_monsters[index])
+def Monster(monster: Union[str, dict]) -> _Monster:
+    """
+    Create new Monster by calling with string (e.g., zombie)
+    Deserialize monster by calling with a dict
+    """
+    if type(monster) == str:
+        # new monster
+        return _Monster(**SRD_monsters[monster])
+    else:
+        # deserialized monster
+        return _Monster(**monster)

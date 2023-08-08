@@ -62,5 +62,12 @@ class _Item:
             yield k, v
 
 
-def Item(index: str) -> _Item:
-    return _Item(**SRD_equipment[index])
+def Item(item: Union[str, dict]) -> _Item:
+    """
+    Create new Item by calling with string (e.g., torch)
+    Deserialize item by calling with a dict
+    """
+    if type(item) == str:
+        return _Item(**SRD_equipment[item])
+    else:
+        return _Item(**item)
