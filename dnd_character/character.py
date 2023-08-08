@@ -660,12 +660,15 @@ class Character:
         new_cfd = self.get_class_features_data(
             class_name=self.class_name, class_level=self.level
         )
-        self.class_features_data = {
-            k: v
-            if "available" not in k and "days" not in k
-            else self.class_features_data[k]
-            for k, v in new_cfd.items()
-        }
+        if new_cfd is None:
+            self.class_features_data = None
+        else:
+            self.class_features_data = {
+                k: v
+                if "available" not in k and "days" not in k
+                else self.class_features_data[k]
+                for k, v in new_cfd.items()
+            }
 
     def set_spell_slots(self, new_spell_slots: dict[str, int]) -> dict[str, int]:
         default_spell_slots = {
