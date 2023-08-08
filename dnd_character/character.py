@@ -1027,4 +1027,4 @@ class Character:
             if reset_day_counters:
                 data["days_since_last_arcane_recovery"] = 999  # 1 day cooldown
 
-        return features
+        return data

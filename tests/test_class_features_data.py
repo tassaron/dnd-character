@@ -1,5 +1,6 @@
 import pytest
 from dnd_character import Character
+from dnd_character.classes import CLASSES
 
 
 @pytest.mark.parametrize(
