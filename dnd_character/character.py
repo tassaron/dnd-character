@@ -22,12 +22,25 @@ class InvalidParameterError(Exception):
     pass
 
 
+class SpellList(list):
+    """A list with a maximum size, for storing spells and cantrips"""
+
+    def __init__(self, initial: Optional[list["_SPELL"]]) -> None:
+        initial = initial if initial is not None else []
+        self.maximum: int = len(initial)
+        super().__init__(initial)
+
+    def append(self, new_val: "_SPELL") -> None:
+        if len(self) + 1 > self.maximum:
+            raise ValueError(f"Too many spells in list (max {self.maximum})")
+        super().append(new_val)
+
+
 class Character:
     """
-    Character Object deals with all aspects of the player character including
-    name, age, gender, description, biography, level, wealth, and all
-    player ability scores.  All can be omitted to create a blank, level 1
-    player.
+    Character object deals with all aspects of a player character including
+    name, class features, level/experience, wealth, and all ability scores.
+    All can be omitted to create a blank, level 1 character.
     """
 
     def __init__(
@@ -174,15 +187,9 @@ class Character:
         self.proficiencies = proficiencies if proficiencies is not None else {}
         self.saving_throws = saving_throws if saving_throws is not None else []
         self.spellcasting_stat = spellcasting_stat
-        self._cantrips_known: list["_SPELL"] = (
-            cantrips_known if cantrips_known is not None else []
-        )
-        self._spells_known: list["_SPELL"] = (
-            spells_known if spells_known is not None else []
-        )
-        self._spells_prepared: list["_SPELL"] = (
-            spells_prepared if spells_prepared is not None else []
-        )
+        self._cantrips_known: SpellList["_SPELL"] = SpellList(cantrips_known)
+        self._spells_known: SpellList["_SPELL"] = SpellList(spells_known)
+        self._spells_prepared: SpellList["_SPELL"] = SpellList(spells_prepared)
         self.set_spell_slots(spell_slots)
 
         # Experience points
@@ -416,7 +423,7 @@ class Character:
         return self._class_features_data
 
     @property
-    def cantrips_known(self) -> list["_SPELL"]:
+    def cantrips_known(self) -> SpellList["_SPELL"]:
         return self._cantrips_known
 
     @cantrips_known.setter
@@ -424,7 +431,7 @@ class Character:
         self._cantrips_known = new_val
 
     @property
-    def spells_known(self) -> list["_SPELL"]:
+    def spells_known(self) -> SpellList["_SPELL"]:
         return self._spells_known
 
     @spells_known.setter
@@ -432,7 +439,7 @@ class Character:
         self._spells_known = new_val
 
     @property
-    def spells_prepared(self) -> list["_SPELL"]:
+    def spells_prepared(self) -> SpellList["_SPELL"]:
         return self._spells_prepared
 
     @spells_prepared.setter
@@ -550,9 +557,11 @@ class Character:
             self.class_index = new_class.index
             self.hd = new_class.hit_die
             self._class_levels = SRD_class_levels[self.class_index]
+            # Set spellcasting stat to the full name of an ability score
+            ability = {"wis": "wisdom", "cha": "charisma", "int": "intelligence"}
             if new_class.spellcasting:
-                self.spellcasting_stat = new_class.spellcasting["spellcasting_ability"][
-                    "index"
+                self.spellcasting_stat = ability[
+                    new_class.spellcasting["spellcasting_ability"]["index"]
                 ]
             else:
                 self.spellcasting_stat = None
@@ -640,7 +649,7 @@ class Character:
         e.g., adds new class features, spell slots
         Called by `level.setter` and `classs.setter`
         """
-        if self.level > 20:
+        if not self._class_levels or self.level > 20:
             return
         for data in self._class_levels:
             if data["level"] > self.level:
@@ -651,12 +660,9 @@ class Character:
             self.prof_bonus = data.get("prof_bonus", self.prof_bonus)
             for feat in data["features"]:
                 self.class_features[feat["index"]] = SRD(feat["url"])
-            while len(self.class_features_enabled) < len(self.class_features):
-                self.class_features_enabled.append(True)
 
-            # Fetch new spell slots
-            spell_slots = data.get("spellcasting", self.spell_slots)
-            self.set_spell_slots(spell_slots)
+        while len(self.class_features_enabled) < len(self.class_features):
+            self.class_features_enabled.append(True)
 
         # During level up some class specific values change. example: rage damage bonus 2 -> 4
         # Class specific counters do not reset! example: available inspirations
@@ -675,9 +681,39 @@ class Character:
                 }
 
     def set_spell_slots(self, new_spell_slots: dict[str, int]) -> dict[str, int]:
+        # Fetch new spell slots
+        spell_slots = (
+            self._class_levels[self.level - 1]
+            .get("spellcasting", self.spell_slots)
+            .copy()
+        )
+        spell_slots.pop("cantrips_known", None)
+        spell_slots.pop("spells_known", None)
+        self.update_spell_lists()
+        self.set_spell_slots(spell_slots)
+
+    def update_spell_lists(self) -> None:
+        """Set maximum of spells_known, spells_prepared, cantrips_known"""
+        spell_slots = (
+            self._class_levels[self.level - 1]
+            .get("spellcasting", self.spell_slots)
+            .copy()
+        )
+        # Set maximums of _spells_known and _cantrips_known
+        if "cantrips_known" in spell_slots:
+            self._cantrips_known.maximum = spell_slots.pop("cantrips_known")
+        if "spells_known" in spell_slots:
+            self._spells_known.maximum = spell_slots.pop("spells_known")
+        # Calculate new maximum of spells_prepared
+        if self.spellcasting_stat is not None:
+            self._spells_prepared.maximum = max(
+                self.get_ability_modifier(self.__dict__[self.spellcasting_stat])
+                + self.level,
+                1,
+            )
+
+    def set_spell_slots(self, new_spell_slots: Optional[dict[str, int]]) -> None:
         default_spell_slots = {
-            "cantrips_known": 0,
-            "spells_known": 0,
             "spell_slots_level_1": 0,
             "spell_slots_level_2": 0,
             "spell_slots_level_3": 0,
