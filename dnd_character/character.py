@@ -80,7 +80,6 @@ class Character:
         ability_score_bonus: int = 0,
         class_features: Optional[dict] = None,
         class_features_enabled: Optional[list] = None,
-        class_features_data: Optional[list] = None,
         spellcasting_stat: Optional[str] = None,
         player_options: Optional[dict] = None,
         armor_class: Optional[int] = None,
@@ -153,7 +152,7 @@ class Character:
         self.class_features_enabled = (
             class_features_enabled if class_features_enabled is not None else []
         )
-        self.class_features_data = self.get_class_features_data(
+        self._class_features_data = self.get_class_features_data(
             class_name=self.class_name, class_level=1 if level is None else int(level)
         )
 
@@ -414,6 +413,10 @@ class Character:
         return True
 
     @property
+    def class_features_data(self):
+        return self._class_features_data
+
+    @property
     def cantrips_known(self) -> list["_SPELL"]:
         return self._cantrips_known
 
@@ -662,12 +665,12 @@ class Character:
             class_name=self.class_name, class_level=self.level
         )
         if new_cfd is None:
-            self.class_features_data = None
+            self._class_features_data = None
         else:
-            if self.class_features_data is None:
-                self.class_features_data = new_cfd
+            if self._class_features_data is None:
+                self._class_features_data = new_cfd
             else:
-                self.class_features_data = {
+                self._class_features_data = {
                     k: v
                     if "available" not in k and "days" not in k
                     else self.class_features_data[k]
