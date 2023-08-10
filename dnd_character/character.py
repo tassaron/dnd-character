@@ -80,6 +80,7 @@ class Character:
         ability_score_bonus: int = 0,
         class_features: Optional[dict] = None,
         class_features_enabled: Optional[list] = None,
+        class_features_data: Optional[list] = None,
         spellcasting_stat: Optional[str] = None,
         player_options: Optional[dict] = None,
         armor_class: Optional[int] = None,
@@ -132,6 +133,14 @@ class Character:
             ), "Alignments must be 2 letters (i.e LE, LG, TN, NG, CN)"
             self.alignment = self.alignment.upper()
 
+        # Ability Scores
+        self.strength = self.set_initial_ability_score(strength)
+        self._dexterity = self.set_initial_ability_score(dexterity)
+        self.constitution = self.set_initial_ability_score(constitution)
+        self.wisdom = self.set_initial_ability_score(wisdom)
+        self.intelligence = self.set_initial_ability_score(intelligence)
+        self.charisma = self.set_initial_ability_score(charisma)
+
         # DND Class
         self.class_name = class_name
         self.class_index = class_index
@@ -145,16 +154,8 @@ class Character:
             class_features_enabled if class_features_enabled is not None else []
         )
         self.class_features_data = self.get_class_features_data(
-            class_name=self.class_name, class_level=level
+            class_name=self.class_name, class_level=1 if level is None else int(level)
         )
-
-        # Ability Scores
-        self.strength = self.set_initial_ability_score(strength)
-        self._dexterity = self.set_initial_ability_score(dexterity)
-        self.constitution = self.set_initial_ability_score(constitution)
-        self.wisdom = self.set_initial_ability_score(wisdom)
-        self.intelligence = self.set_initial_ability_score(intelligence)
-        self.charisma = self.set_initial_ability_score(charisma)
 
         # Hit Dice and Hit Points: self.hd == 8 is a d8, 10 is a d10, etc
         self.hd = 8 if hd is None else hd
@@ -872,7 +873,9 @@ class Character:
             return None
 
         # Load level appropriate class features
-        data = SRD_class_levels[class_name.lower()][class_level - 1]["class_specific"]
+        data = SRD_class_levels[class_name.lower()][class_level - 1][
+            "class_specific"
+        ].copy()
 
         # Create class feature counters
         if class_name == "Barbarian":

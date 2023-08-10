@@ -6,8 +6,16 @@ from dnd_character.classes import CLASSES
 @pytest.mark.parametrize(
     ("input", "expected_value"),
     (
-        ({"classs": CLASSES["barbarian"]}, None),
         ({"level": 1}, None),
+        (
+            {"classs": CLASSES["barbarian"]},
+            {
+                "brutal_critical_dice": 0,
+                "max_rage_count": 2,
+                "available_rage_count": 2,
+                "rage_damage_bonus": 2,
+            },
+        ),
         (
             {"classs": CLASSES["barbarian"], "level": 9},
             {
@@ -32,8 +40,9 @@ from dnd_character.classes import CLASSES
         (
             {"classs": CLASSES["wizard"], "level": 20},
             {
-                "max_arcane_recovery": 10,
-                "available_arcane_recovery": 10,
+                "arcane_recovery_levels": 10,
+                "max_arcane_recovery": 1,
+                "available_arcane_recovery": 1,
                 "days_since_last_arcane_recovery": 999,
             },
         ),
