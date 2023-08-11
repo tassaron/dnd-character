@@ -65,10 +65,14 @@ def test_reset_class_features_data_bard_level_1():
     assert data["max_inspiration_count"] == 1
     data["available_inspiration_count"] = 0
     # at level 1 a short rest should NOT restore inspiration count
-    data = reset_class_features_data_counters(character=c, data=data, short_rest=True, long_rest=False)
+    data = reset_class_features_data_counters(
+        character=c, data=data, short_rest=True, long_rest=False
+    )
     assert data["available_inspiration_count"] == 0
     # a long rest should always restore inspiration count
-    data = reset_class_features_data_counters(character=c, data=data, short_rest=False, long_rest=True)
+    data = reset_class_features_data_counters(
+        character=c, data=data, short_rest=False, long_rest=True
+    )
     assert data["available_inspiration_count"] == 1
 
 
@@ -79,7 +83,9 @@ def test_reset_class_features_data_bard_level_5():
     assert data["max_inspiration_count"] == 1
     data["available_inspiration_count"] = 0
     # at level 5 a short rest should restore inspiration count
-    data = reset_class_features_data_counters(character=c, data=data, short_rest=True, long_rest=False)
+    data = reset_class_features_data_counters(
+        character=c, data=data, short_rest=True, long_rest=False
+    )
     assert data["available_inspiration_count"] == 1
 
 

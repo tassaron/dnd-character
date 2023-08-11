@@ -147,16 +147,14 @@ class Character:
         self._class_levels = (
             [] if class_index not in SRD_class_levels else SRD_class_levels[class_index]
         )
-        self._level = 1 # may be increased later in this method
+        self._level = 1  # may be increased later in this method
         self.prof_bonus = prof_bonus
         self.ability_score_bonus = ability_score_bonus
         self.class_features = class_features if class_features is not None else {}
         self.class_features_enabled = (
             class_features_enabled if class_features_enabled is not None else []
         )
-        self._class_features_data = get_class_features_data(
-            character=self
-        )
+        self._class_features_data = get_class_features_data(character=self)
 
         # Hit Dice and Hit Points: self.hd == 8 is a d8, 10 is a d10, etc
         self.hd = 8 if hd is None else hd
