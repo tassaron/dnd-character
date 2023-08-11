@@ -10,6 +10,7 @@ from .SRD import SRD, SRD_class_levels
 from .equipment import _Item, Item
 from .experience import Experience, experience_at_level, level_at_experience
 from .dice import sum_rolls
+from .features import get_class_features_data
 
 
 LOG = logging.getLogger(__package__)
@@ -132,19 +133,6 @@ class Character:
             ), "Alignments must be 2 letters (i.e LE, LG, TN, NG, CN)"
             self.alignment = self.alignment.upper()
 
-        # DND Class
-        self.class_name = class_name
-        self.class_index = class_index
-        self._class_levels = (
-            [] if class_index not in SRD_class_levels else SRD_class_levels[class_index]
-        )
-        self.prof_bonus = prof_bonus
-        self.ability_score_bonus = ability_score_bonus
-        self.class_features = class_features if class_features is not None else {}
-        self.class_features_enabled = (
-            class_features_enabled if class_features_enabled is not None else []
-        )
-
         # Ability Scores
         self.strength = self.set_initial_ability_score(strength)
         self._dexterity = self.set_initial_ability_score(dexterity)
@@ -152,6 +140,21 @@ class Character:
         self.wisdom = self.set_initial_ability_score(wisdom)
         self.intelligence = self.set_initial_ability_score(intelligence)
         self.charisma = self.set_initial_ability_score(charisma)
+
+        # DND Class
+        self.class_name = class_name
+        self.class_index = class_index
+        self._class_levels = (
+            [] if class_index not in SRD_class_levels else SRD_class_levels[class_index]
+        )
+        self._level = 1  # may be increased later in this method
+        self.prof_bonus = prof_bonus
+        self.ability_score_bonus = ability_score_bonus
+        self.class_features = class_features if class_features is not None else {}
+        self.class_features_enabled = (
+            class_features_enabled if class_features_enabled is not None else []
+        )
+        self._class_features_data = get_class_features_data(character=self)
 
         # Hit Dice and Hit Points: self.hd == 8 is a d8, 10 is a d10, etc
         self.hd = 8 if hd is None else hd
@@ -183,7 +186,6 @@ class Character:
         self.set_spell_slots(spell_slots)
 
         # Experience points
-        self._level = 1
         # self.level could be altered by Experience object below
         if experience is None:
             experience = 0
@@ -408,6 +410,10 @@ class Character:
             if pair1 != pair2:
                 return False
         return True
+
+    @property
+    def class_features_data(self):
+        return self._class_features_data
 
     @property
     def cantrips_known(self) -> list["_SPELL"]:
@@ -651,6 +657,22 @@ class Character:
             # Fetch new spell slots
             spell_slots = data.get("spellcasting", self.spell_slots)
             self.set_spell_slots(spell_slots)
+
+        # During level up some class specific values change. example: rage damage bonus 2 -> 4
+        # Class specific counters do not reset! example: available inspirations
+        new_cfd = get_class_features_data(character=self)
+        if new_cfd is None:
+            self._class_features_data = None
+        else:
+            if self._class_features_data is None:
+                self._class_features_data = new_cfd
+            else:
+                self._class_features_data = {
+                    k: v
+                    if "available" not in k and "days" not in k
+                    else self._class_features_data[k]
+                    for k, v in new_cfd.items()
+                }
 
     def set_spell_slots(self, new_spell_slots: dict[str, int]) -> dict[str, int]:
         default_spell_slots = {
