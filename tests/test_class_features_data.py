@@ -114,5 +114,8 @@ def test_class_features_data_monk_ki_points_level_increase_level():
 def test_class_features_data_monk_ki_points_level_increase_experience():
     c = Character(classs=CLASSES["monk"])
     assert c.class_features_data["max_ki_points"] == 0
+    assert c.class_features_data["available_ki_points"] == 0
     c.experience = experience_at_level(2)
     assert c.class_features_data["max_ki_points"] == 2
+    # available counter stays at 0 after level up despite max increasing
+    assert c.class_features_data["available_ki_points"] == 0
