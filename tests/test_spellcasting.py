@@ -1,6 +1,7 @@
+import pytest
 from ast import literal_eval
 from dnd_character.character import Character
-from dnd_character.classes import Bard, Wizard, Ranger
+from dnd_character.classes import CLASSES, Bard, Wizard, Ranger
 from dnd_character.spellcasting import spells_for_class_level, SPELLS, _SPELL
 
 
@@ -98,3 +99,50 @@ def test_spells_prepared_serializes_in_character():
         wiz.spells_prepared[0].index
         == literal_eval(str(dict(wiz)))["spells_prepared"][0]["index"]
     )
+
+
+@pytest.mark.parametrize(
+    ("class_index", "level", "expected"),
+    (("bard", 2, 5), ("warlock", 10, 10), ("ranger", 4, 3)),
+)
+def test_spells_known_maximum(class_index, level, expected):
+    c = Character(classs=CLASSES[class_index], level=level)
+    assert c.spells_known.maximum == expected
+
+
+def test_spells_prepared_maximum_cleric():
+    c = Character(classs=CLASSES["cleric"], wisdom=14)
+    assert c.spells_prepared.maximum == 3
+
+
+def test_spells_prepared_maximum_wizard():
+    c = Character(classs=CLASSES["wizard"], intelligence=14)
+    assert c.spells_prepared.maximum == 3
+
+
+def test_spells_exceeded_assignment():
+    c = Character(classs=CLASSES["bard"])
+    c.spells_known = [SPELLS["thunderwave"]] * 4
+    assert c.spells_known.maximum == 4
+    assert len(c.spells_known) == 4
+    with pytest.raises(ValueError, match=" spells "):
+        c.spells_known += [SPELLS["identify"]]
+
+
+def test_spells_exceeded_append():
+    c = Character(classs=CLASSES["bard"])
+    c.spells_known = [SPELLS["thunderwave"]] * 4
+    assert c.spells_known.maximum == 4
+    assert len(c.spells_known) == 4
+    with pytest.raises(ValueError, match=" spells "):
+        c.spells_known.append(SPELLS["identify"])
+
+
+def test_spells_exceeded_at_init():
+    c = Character(classs=CLASSES["bard"], spells_known=[SPELLS["thunderwave"]] * 4)
+    c_as_dict = dict(c)
+    # add illegal spell while character is a dictionary
+    c_as_dict["spells_known"].append(c_as_dict["spells_known"][0].copy())
+    new_c = Character(**c_as_dict)
+    # illegal spell increases maximum in this edge case - desireable? I think so
+    assert len(new_c.spells_known) == new_c.spells_known.maximum

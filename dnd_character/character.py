@@ -27,8 +27,19 @@ class SpellList(list):
 
     def __init__(self, initial: Optional[list["_SPELL"]]) -> None:
         initial = initial if initial is not None else []
-        self.maximum: int = len(initial)
+        self._maximum: int = len(initial)
         super().__init__(initial)
+
+    @property
+    def maximum(self) -> int:
+        return self._maximum
+
+    @maximum.setter
+    def maximum(self, new_val: int) -> None:
+        if len(self) > new_val:
+            LOG.error("Too many spells in spell list to lower its maximum.")
+            return
+        self._maximum = new_val
 
     def append(self, new_val: "_SPELL") -> None:
         if len(self) + 1 > self.maximum:
@@ -428,7 +439,13 @@ class Character:
 
     @cantrips_known.setter
     def cantrips_known(self, new_val) -> None:
-        self._cantrips_known = new_val
+        if len(new_val) > self._cantrips_known.maximum:
+            raise ValueError(
+                f"Too many spells in list (max {self._cantrips_known.maximum})"
+            )
+        self._cantrips_known = (
+            new_val if isinstance(new_val, SpellList) else SpellList(initial=new_val)
+        )
 
     @property
     def spells_known(self) -> SpellList["_SPELL"]:
@@ -436,7 +453,13 @@ class Character:
 
     @spells_known.setter
     def spells_known(self, new_val) -> None:
-        self._spells_known = new_val
+        if len(new_val) > self._spells_known.maximum:
+            raise ValueError(
+                f"Too many spells in list (max {self._spells_known.maximum})"
+            )
+        self._spells_known = (
+            new_val if isinstance(new_val, SpellList) else SpellList(initial=new_val)
+        )
 
     @property
     def spells_prepared(self) -> SpellList["_SPELL"]:
@@ -444,7 +467,13 @@ class Character:
 
     @spells_prepared.setter
     def spells_prepared(self, new_val) -> None:
-        self._spells_prepared = new_val
+        if len(new_val) > self._spells_prepared.maximum:
+            raise ValueError(
+                f"Too many spells in list (max {self._spells_prepared.maximum})"
+            )
+        self._spells_prepared = (
+            new_val if isinstance(new_val, SpellList) else SpellList(initial=new_val)
+        )
 
     @property
     def inventory(self) -> list[_Item]:
@@ -680,7 +709,6 @@ class Character:
                     for k, v in new_cfd.items()
                 }
 
-    def set_spell_slots(self, new_spell_slots: dict[str, int]) -> dict[str, int]:
         # Fetch new spell slots
         spell_slots = (
             self._class_levels[self.level - 1]
