@@ -9,6 +9,7 @@ if TYPE_CHECKING:
 from .SRD import SRD, SRD_class_levels
 from .equipment import _Item, Item
 from .experience import Experience, experience_at_level, level_at_experience
+from .spellcasting import SpellList
 from .dice import sum_rolls
 from .features import get_class_features_data
 
@@ -20,31 +21,6 @@ coin_value = {"pp": 10, "gp": 1, "ep": 0.5, "sp": 0.1, "cp": 0.01}
 
 class InvalidParameterError(Exception):
     pass
-
-
-class SpellList(list):
-    """A list with a maximum size, for storing spells and cantrips"""
-
-    def __init__(self, initial: Optional[list["_SPELL"]]) -> None:
-        initial = initial if initial is not None else []
-        self._maximum: int = len(initial)
-        super().__init__(initial)
-
-    @property
-    def maximum(self) -> int:
-        return self._maximum
-
-    @maximum.setter
-    def maximum(self, new_val: int) -> None:
-        if len(self) > new_val:
-            LOG.error("Too many spells in spell list to lower its maximum.")
-            return
-        self._maximum = new_val
-
-    def append(self, new_val: "_SPELL") -> None:
-        if len(self) + 1 > self.maximum:
-            raise ValueError(f"Too many spells in list (max {self.maximum})")
-        super().append(new_val)
 
 
 class Character:
@@ -131,7 +107,6 @@ class Character:
                 intelligence (int):  character's starting intelligence
                 charisma     (int):  character's starting charisma
         """
-
         # Decorative attrs that don't affect program logic
         self.uid: UUID = (
             uuid4() if uid is None else uid if isinstance(uid, UUID) else UUID(uid)
