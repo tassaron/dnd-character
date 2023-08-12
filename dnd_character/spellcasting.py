@@ -1,8 +1,10 @@
+import logging
 from typing import Union, Optional
 from dataclasses import dataclass, asdict
 from .SRD import SRD, SRD_endpoints, SRD_classes
 
 
+LOG = logging.getLogger(__package__)
 SRD_spells = {
     spell["index"]: SRD(spell["url"])
     for spell in SRD(SRD_endpoints["spells"])["results"]
@@ -48,6 +50,31 @@ class _SPELL:
 SPELLS: dict[str, _SPELL] = {
     index: _SPELL(**spell) for index, spell in SRD_spells.items()
 }
+
+
+class SpellList(list):
+    """A list with a maximum size, for storing spells and cantrips"""
+
+    def __init__(self, initial: Optional[list["_SPELL"]]) -> None:
+        initial = initial if initial is not None else []
+        self._maximum: int = len(initial)
+        super().__init__(initial)
+
+    @property
+    def maximum(self) -> int:
+        return self._maximum
+
+    @maximum.setter
+    def maximum(self, new_val: int) -> None:
+        if len(self) > new_val:
+            LOG.error("Too many spells in spell list to lower its maximum.")
+            return
+        self._maximum = new_val
+
+    def append(self, new_val: "_SPELL") -> None:
+        if len(self) + 1 > self.maximum:
+            raise ValueError(f"Too many spells in list (max {self.maximum})")
+        super().append(new_val)
 
 
 spell_names_by_level = {
