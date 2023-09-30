@@ -4,6 +4,7 @@ import requests
 import json
 import os
 
+#Spellbook is a subclass of the _Item class that only accepts wizard spells as contents 
 class Spellbook(_Item):
     # Constructor for initializing a new Spellbook instance
     def __init__(self, contents, cost, desc, index, name, properties, special, url, equipment_category, *args,
