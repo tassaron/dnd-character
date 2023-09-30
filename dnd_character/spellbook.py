@@ -6,7 +6,8 @@ import os
 
 #Spellbook is a subclass of the _Item class that only accepts wizard spells as contents 
 class Spellbook(_Item):
-    # Constructor for initializing a new Spellbook instance
+    MAX_SPELLS = 100  # Class variable to define the maximum number of spells
+
     def __init__(self, contents, cost, desc, index, name, properties, special, url, equipment_category, *args,
                  **kwargs):
         super().__init__(contents=contents, cost=cost, desc=desc, index=index, name=name, properties=properties,
@@ -15,10 +16,22 @@ class Spellbook(_Item):
 
     # Method to add a spell to the spellbook if it passes validation
     def add_spell(self, spell):
+        if len(self.contents) >= Spellbook.MAX_SPELLS:
+            print("Spellbook is full. Cannot add more spells.")
+            return
+
         if self.validate_spell(spell):
             self.contents.append(spell)
         else:
             print("Invalid spell. Only spells can be added to a spellbook.")
+
+    #Method to remove a spell from a spellbook
+    def remove_spell(self, spell):
+        if spell in self.contents:
+            self.contents.remove(spell)
+            print(f"Removed {spell} from the spellbook.")
+        else:
+            print(f"{spell} not found in the spellbook.")
 
     # Method to validate a spell based on D&D wizard spellcasting rules
     def validate_spell(self, spell, spell_level=None, wizard_level=None, wizard_subclass=None):
