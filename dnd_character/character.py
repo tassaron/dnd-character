@@ -800,7 +800,20 @@ class Character:
         If the item is armor or a shield, the armor_class attribute will be set
         and any other armor/shields in the inventory will be removed.
         """
+        # Applying armor class if the item is armor or a shield
         self.apply_armor_class(item)
+
+        # Checking if the item's index property equals "spellbook"
+        if getattr(item, 'index', None) == 'spellbook':
+            # Creating a new Spellbook instance with necessary arguments
+            # Assuming the Spellbook constructor accepts the same arguments as the item
+            spellbook = Spellbook(contents=item.contents, cost=item.cost, desc=item.desc, index=item.index,
+                                  name=item.name, properties=item.properties, special=item.special,
+                                  url=item.url, equipment_category=item.equipment_category)
+            # Replacing the placeholder item with the new Spellbook instance
+            item = spellbook
+
+        # Adding the item or Spellbook instance to the inventory
         self.inventory.append(item)
 
     def remove_item(self, item: _Item) -> None:
