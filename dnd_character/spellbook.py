@@ -6,6 +6,7 @@ import os
 
 #Spellbook is a subclass of the _Item class that only accepts wizard spells as contents 
 class Spellbook(_Item):
+    # Constructor for initializing a new Spellbook instance
     MAX_SPELLS = 100  # Class variable to define the maximum number of spells
 
     def __init__(self, contents, cost, desc, index, name, properties, special, url, equipment_category, *args,
@@ -153,10 +154,10 @@ my_spellbook = Spellbook(contents=[], cost={}, desc=[], index="", name="", prope
 
 def run_tests():
     # Create mock spell objects
-    mock_spell1 = type('Spell', (object,), {'level': 2, 'name': 'MockSpell1'})
+    mock_spell1 = type('Spell', (object,), {'level': 2, 'name': 'acid-arrow'})
     mock_spell2 = type('Spell', (object,), {'level': 2, 'name': 'NonWizardSpell'})
     mock_spell3 = type('Spell', (object,), {'level': 3, 'name': 'Fireball'})
-    mock_spell4 = type('Spell', (object,), {'level': 3, 'name': 'VampiricTouch'})
+    mock_spell4 = type('Spell', (object,), {'level': 3, 'name': 'Vampiric Touch'})
 
     # Test Case 1: Level 1 Wizard tries to add a Level 2 spell (Should fail)
     result1 = my_spellbook.validate_spell(spell=mock_spell1, wizard_level=1)
