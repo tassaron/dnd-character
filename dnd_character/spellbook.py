@@ -33,7 +33,11 @@ class Spellbook(_Item):
             print(f"Removed {spell} from the spellbook.")
         else:
             print(f"{spell} not found in the spellbook.")
-
+            
+    def check_components(self, spell, char_current_gp):
+        cost = spell.level * 50
+        return current_gp >= cost
+        
     # Method to validate a spell based on D&D wizard spellcasting rules
     def validate_spell(self, spell, spell_level=None, wizard_level=None, wizard_subclass=None):
         # Fetch the list of wizard spells by level from the SRD data
@@ -52,8 +56,9 @@ class Spellbook(_Item):
         if spell.name not in wizard_spells_by_level[spell.level]:
             return False
 
-        # Optional: Check for subclass or component restrictions
-        if wizard_subclass and not is_spell_allowed_for_subclass(spell, wizard_subclass):
+        # Check for component restrictions
+        if not self.check_components(spell, current_gp):
+            print(f"Insufficient gold to scribe {spell.name}.")
             return False
 
         return True
