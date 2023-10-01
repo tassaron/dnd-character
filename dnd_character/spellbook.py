@@ -1,10 +1,12 @@
+import dnd_character.character
 from dnd_character.equipment import _Item
-from .SRD import SRD
-import requests
+from dnd_character import character
 import json
 import os
+import dnd_character
 
-#Spellbook is a subclass of the _Item class that only accepts wizard spells as contents 
+
+# Spellbook is a subclass of the _Item class that only accepts wizard spells as contents
 class Spellbook(_Item):
     # Constructor for initializing a new Spellbook instance
     MAX_SPELLS = 100  # Class variable to define the maximum number of spells
@@ -16,32 +18,37 @@ class Spellbook(_Item):
         self.type = 'Spellbook'
 
     # Method to add a spell to the spellbook if it passes validation
-    def add_spell(self, spell):
+    def add_spell(self, spell, char_instance):
         if len(self.contents) >= Spellbook.MAX_SPELLS:
             print("Spellbook is full. Cannot add more spells.")
             return
 
-        if self.validate_spell(spell):
+        if self.validate_spell(spell, char_instance):
             self.contents.append(spell)
         else:
             print("Invalid spell. Only spells can be added to a spellbook.")
 
-    #Method to remove a spell from a spellbook
+    # Method to remove a spell from a spellbook
     def remove_spell(self, spell):
         if spell in self.contents:
             self.contents.remove(spell)
             print(f"Removed {spell} from the spellbook.")
         else:
             print(f"{spell} not found in the spellbook.")
-            
-    def check_components(self, spell, char_current_gp):
-        cost = spell.level * 50
-        return current_gp >= cost
-        
+
+    def check_components(self, char_instance, cost):
+        print(char_instance.wealth)
+        return char_instance.wealth >= cost
+
     # Method to validate a spell based on D&D wizard spellcasting rules
-    def validate_spell(self, spell, spell_level=None, wizard_level=None, wizard_subclass=None):
+    def validate_spell(self, spell, char_instance):
         # Fetch the list of wizard spells by level from the SRD data
         wizard_spells_by_level = fetch_wizard_spells_from_json()
+        print(f"Validating spell: {spell.name}, for character: {char_instance.name}")  # Print spell and character info
+        # Check if character is a wizard
+        if not char_instance.classs.name == "Wizard":
+            print(f"{char_instance.name} is not a wizard and cannot scribe spells.")
+            return False
 
         # Check if the spell level exists in the dictionary
         if spell.level not in wizard_spells_by_level:
@@ -49,7 +56,7 @@ class Spellbook(_Item):
             return False
 
         # Check if the spell is of a level the wizard can cast
-        if spell.level > max_level_for_wizard(wizard_level):
+        if spell.level > max_level_for_wizard(char_instance.level):
             return False
 
         # Check if the spell is in the wizard spell list
@@ -57,11 +64,22 @@ class Spellbook(_Item):
             return False
 
         # Check for component restrictions
-        if not self.check_components(spell, current_gp):
+        cost = spell.level * 50 * dnd_character.character.coin_value['gp']
+        cost_in_cp = cost * (1 / dnd_character.character.coin_value['gp']) * dnd_character.character.coin_value['cp']
+
+        if not self.check_components(char_instance, cost):
             print(f"Insufficient gold to scribe {spell.name}.")
             return False
-
-        return True
+        print(f"Char detailed wealth before transaction: {char_instance.wealth_detailed}")  # Debug line
+        print(f"Char wealth before transaction: {char_instance.wealth}")  # Debug line
+        try:
+            print(f"Cost of transaction: {cost}")  # Debug line
+            char_instance.change_wealth(cp=-cost_in_cp)  # deduct cost
+            print(f"Char detailed wealth after transaction: {char_instance.wealth_detailed}")  # New debug line
+            return True
+        except ValueError:  # Insufficient funds
+            print("Exception occurred: ValueError - Insufficient funds")
+            return False
 
 
 def max_level_for_wizard(wizard_level):
@@ -86,7 +104,8 @@ def max_level_for_wizard(wizard_level):
     else:
         return 9  # Level 9 spells
 
-#Function to retrieve the wizard spell data from the JSON cache
+
+# Function to retrieve the wizard spell data from the JSON cache
 def fetch_wizard_spells_from_json():
     current_script_path = os.path.dirname(__file__)
     json_cache_path = os.path.join(current_script_path, 'json_cache', 'api_spells.json')
@@ -114,26 +133,19 @@ def fetch_wizard_spells_from_json():
                 level = spell_data['level']
                 wizard_spells_by_level.setdefault(level, []).append(spell_data['name'])
 
-        return wizard_spells_by_level
+    except (FileNotFoundError, json.JSONDecodeError):
+        print("Error encountered while processing JSON.")
 
-    except FileNotFoundError:
-        print("JSON file not found.")
-        return None
-    except json.JSONDecodeError:
-        print("Error decoding JSON.")
-        return None
-
-    wizard_spells_by_level = {}
     try:
-        with open(json_cache_path, 'r') as f:  # Use json_cache_path instead of json_file_path
+        with open(json_cache_path, 'r') as f:
             spells = json.load(f)["results"]
         for spell in spells:
             spell_data_path = os.path.join(current_script_path, 'json_cache', f"api_spells_{spell['index']}.json")
-            print(f"Attempting to open additional JSON file at {spell_data_path}...")
+            # print(f"Attempting to open additional JSON file at {spell_data_path}...")
             try:
                 with open(spell_data_path, 'r') as f:
                     spell_data = json.load(f)
-                    print("Additional JSON file read successfully. Content:", spell_data)
+                    # print("Additional JSON file read successfully. Content:", spell_data)
             except FileNotFoundError:
                 print(f"Additional JSON file {spell_data_path} not found.")
                 continue
@@ -145,43 +157,9 @@ def fetch_wizard_spells_from_json():
                 if level not in wizard_spells_by_level:
                     wizard_spells_by_level[level] = []
                 wizard_spells_by_level[level].append(spell_data['name'])
-        return wizard_spells_by_level
-    except FileNotFoundError:
-        print("JSON file not found.")
-        return None
-    except json.JSONDecodeError:
-        print("Error decoding JSON.")
-        return None
+    except (FileNotFoundError, json.JSONDecodeError):
+        print("Error encountered while processing JSON.")
 
-# Initialize a Spellbook object
-my_spellbook = Spellbook(contents=[], cost={}, desc=[], index="", name="", properties=[], special=[], url="", equipment_category={})
+    return wizard_spells_by_level
 
 
-def run_tests():
-    # Create mock spell objects
-    mock_spell1 = type('Spell', (object,), {'level': 2, 'name': 'acid-arrow'})
-    mock_spell2 = type('Spell', (object,), {'level': 2, 'name': 'NonWizardSpell'})
-    mock_spell3 = type('Spell', (object,), {'level': 3, 'name': 'Fireball'})
-    mock_spell4 = type('Spell', (object,), {'level': 3, 'name': 'Vampiric Touch'})
-
-    # Test Case 1: Level 1 Wizard tries to add a Level 2 spell (Should fail)
-    result1 = my_spellbook.validate_spell(spell=mock_spell1, wizard_level=1)
-    assert result1 == False, "Test Case 1 Failed"
-
-    # Test Case 2: Level 3 Wizard tries to add a Level 2 spell not in wizard spell list (Should fail)
-    result2 = my_spellbook.validate_spell(spell=mock_spell2, wizard_level=3)
-    assert result2 == False, "Test Case 2 Failed"
-
-    # Test Case 3: Level 5 Wizard tries to add a Level 3 spell in wizard spell list (Should pass)
-    result3 = my_spellbook.validate_spell(spell=mock_spell3, wizard_level=5)
-    assert result3 == True, "Test Case 3 Failed"
-
-    # Test Case 4: Level 5 Wizard of subclass 'Evocation' tries to add a Level 3 spell restricted to 'Necromancy' (Should fail)
-    result4 = my_spellbook.validate_spell(spell=mock_spell4, wizard_level=5, wizard_subclass="Evocation")
-    assert result4 == False, "Test Case 4 Failed"
-
-    print("All test cases passed!")
-
-
-# Run the tests
-#run_tests()
