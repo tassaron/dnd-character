@@ -1,6 +1,5 @@
 import dnd_character.character
 from dnd_character.equipment import _Item
-from dnd_character import character
 import json
 import os
 import dnd_character
@@ -37,7 +36,6 @@ class Spellbook(_Item):
             print(f"{spell} not found in the spellbook.")
 
     def check_components(self, char_instance, cost):
-        print(char_instance.wealth)
         return char_instance.wealth >= cost
 
     # Method to validate a spell based on D&D wizard spellcasting rules
@@ -65,7 +63,6 @@ class Spellbook(_Item):
 
         # Check for component restrictions
         cost = spell.level * 50 * dnd_character.character.coin_value['gp']
-        cost_in_cp = cost * (1 / dnd_character.character.coin_value['gp']) * dnd_character.character.coin_value['cp']
 
         if not self.check_components(char_instance, cost):
             print(f"Insufficient gold to scribe {spell.name}.")
@@ -74,7 +71,7 @@ class Spellbook(_Item):
         print(f"Char wealth before transaction: {char_instance.wealth}")  # Debug line
         try:
             print(f"Cost of transaction: {cost}")  # Debug line
-            char_instance.change_wealth(cp=-cost_in_cp)  # deduct cost
+            char_instance.change_wealth(gp=-cost, conversion=True)  # deduct cost
             print(f"Char detailed wealth after transaction: {char_instance.wealth_detailed}")  # New debug line
             return True
         except ValueError:  # Insufficient funds
@@ -161,5 +158,3 @@ def fetch_wizard_spells_from_json():
         print("Error encountered while processing JSON.")
 
     return wizard_spells_by_level
-
-
